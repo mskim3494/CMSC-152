@@ -1,0 +1,77 @@
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+hit_test sphere_intersect(ray r, sphere s)
+{
+    v3 ro= r.origin;
+    v3 rd= r.direction;
+    v3 sc= s.center;
+    double sr= s.radius;
+    v3 A= v3_sub(ro,sc);
+    double B= v3_dot(A, rd);
+    double C= v3_dot(A, A) - (sr*sr);
+    double D= (B*B) -C;
+    double t= -B -sqrt(D);
+    if(D>0 && t>0){
+        v3 hit_point= ray_position(r, t);
+        v3 normalized_pos= v3_sub(hit_point, sc);
+        rgb surf= (*s.surface_color)(sc, hit_point);
+        return new_ht(0, t,hit_point, surf, s.shine, normalized_pos);
+    } else if(D>0 && t<=0){
+        hit_test missed;
+        missed.miss= MISS;
+        return missed;
+    } else {
+        hit_test missed;
+        missed.miss= MISS;
+        return missed;
+    }
+}
+
+hit_test poster_intersect(ray r, poster p)
+{
+    v3 ro= r.origin;
+    v3 rd= r.direction;
+    v3 n= v3_expr(0,0,-1);
+    double d= p.upper_left.z;
+    double t= -((v3_dot(ro,n) +d) / (v3_dot(rd,n)));
+    v3 hp= ray_position(r,t);
+    if(t>0&&((hp.x>-1 &&hp.x<1)&&(hp.y>-1&&hp.y<1))){
+        rgb surf= (*p.surface_color)(p.upper_left, hp);
+        return new_ht(0, t, hp, surf, p.shine,n);
+    } else {
+        hit_test to_return;
+        to_return.miss= MISS;
+        return to_return;
+    }
+}
+
+
+hit_test intersect(ray r, object obj)
+{
+    switch(obj.tag){
+        case SPHERE :
+            return sphere_intersect(r,obj.o.s);
+        case POSTER :
+            return poster_intersect(r,obj.o.p);
+        default :
+            fprintf(stderr, "invalid tag");
+            exit(1);
+    }
+}
+
+
+
+
+

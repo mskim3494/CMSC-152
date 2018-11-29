@@ -1,0 +1,145 @@
+/* Min Su Kim, mskim3494 */
+/* CS152, Winter 2015 */
+/* Homework 3 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "hw3.h"
+
+int digits[]={1,2,3,4,5};
+int digits1[]={-3,0,29,-1};
+int digits2[]={19,20,48,50};
+int digits3[]={0,3,10,-3};
+int digits4[]={0,-1,-2,-3,};
+
+void evidence_sum()
+{
+    printf(" === testing sum === \n");
+    int digits[]={1,2,3,4,5};
+    int digits1[]={-3,0,29,-1};
+    int digits2[]={19,20,48,50};
+    printf("expecting: 15, %d\n", sum(digits, 5));
+    printf("expecting: 25, %d\n", sum(digits1, 4));
+    printf("expecting: 137, %d\n", sum(digits2, 4));
+}
+
+void evidence_squares()
+{
+    printf(" === testing squares === \n");
+    printf("expecting: {1,4,9,16,25}; ");
+    squares(digits, 5);
+    printf("expecting: {0,9,100,9}; ");
+    squares(digits3, 4);
+    printf("expecting: {0,1,4,9}; ");
+    squares(digits4, 4);
+}
+
+void evidence_positives()
+{
+    printf(" === testing positives === \n");
+    int m=4;
+    int n=4;
+    printf("expecting: {29}; ");
+    positives(digits1, &m);
+    printf("expecting: {9,100,9}; ");
+    positives(digits3, &n);
+}
+
+void evidence_millionaire()
+{
+    printf(" === testing millionaire === \n");
+    int notmillionaire[]= {0,1,2,3,4,5};
+    int almostmillionaire[]={200000,700000,99999};
+    int notrealmillionaire[]={0,0,-1,1000000};
+    int toomuchmoney[]={1000003, 1000000, 1000000};
+    printf("expecting 0, %d\n", millionaire(notmillionaire, 6));
+    printf("expecting 0, %d\n", millionaire(almostmillionaire, 3));
+    printf("expecting 0, %d\n", millionaire(notrealmillionaire, 4));
+    printf("expecting 1, %d\n", millionaire(toomuchmoney, 3));
+}
+
+void evidence_ati()
+{
+    printf(" === testing ati === \n");
+    char a[]="aF08";
+    printf("expecting 10, %d\n", ati(a[0]));
+    printf("expecting 15, %d\n", ati(a[1]));
+    printf("expecting 0, %d\n", ati(a[2]));
+    printf("expecting 8, %d\n", ati(a[3]));
+}
+
+void evidence_random_to_decimal()
+{
+    printf(" === testing random_to_decimal === \n");
+    char hex[]="0x1ab3";
+    char oct[]="01234";
+    char dec[]="1234";
+    printf("expecting 6835, %d\n", random_to_int(hex,16));
+    printf("expecting 1234, %d\n", random_to_int(dec,10));
+    printf("expecting 668, %d\n", random_to_int(oct,8));
+}
+
+void evidence_str_to_int()
+{
+    printf(" === testing str_to_int === \n");
+    char hex[]="0xAaeF4";
+    char oct[]="04321";
+    char dec[]="-1234";
+    char hex2[]="0X1234";
+    printf("expecting 700148, %d\n", str_to_int(hex));
+    printf("expecting 2257, %d\n", str_to_int(oct));
+    printf("expecting -1234, %d\n", str_to_int(dec));
+    printf("expecting 4660, %d\n", str_to_int(hex2));
+}
+
+void evidence_equalq()
+{
+    printf(" === testing equalq === \n");
+    char src[] = "hello world";
+    char from[] = "hello";
+    printf("expecting 1, %d\n", equalq(src, 0, from));
+}
+
+void evidence_find_replace()
+{
+    printf(" === testing find_replace === \n");
+    char src[] = "hello world";
+    char from[] = "hello";
+    char to[] = "hi";
+    char* dest = malloc(sizeof(src));
+    find_replace(src,from,to,dest);
+    printf("%s\n",dest);
+    free(dest);
+    
+    char src1[] = "the thing is there, then?";
+    char from1[] = "the";
+    char to1[] = " ";
+    char* dest1 = malloc(sizeof(src1));
+    find_replace(src1,from1,to1,dest1);
+    printf("%s\n",dest1);
+    free(dest1);
+    
+    char src2[] = "foofoofoo";
+    char from2[] = "foo";
+    char to2[] = "bar";
+    char* dest2 = malloc(sizeof(src2));
+    find_replace(src2,from2,to2,dest2);
+    printf("%s\n",dest2);
+    free(dest2);
+}
+
+int main (int argc, char* argv[])
+{
+    evidence_sum();
+    evidence_squares();
+    evidence_positives();
+    evidence_millionaire();
+    evidence_ati();
+    evidence_random_to_decimal();
+    evidence_str_to_int();
+    evidence_equalq();
+    evidence_find_replace();
+    return 0;
+}

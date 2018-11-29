@@ -1,0 +1,19 @@
+/* Min Su Kim, mskim3494 */
+/* CS152, Winter 2015 */
+/* Homework 2 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "hw2.h"
+
+int main(int argc, char *argv[])
+{
+    int a = atoi(argv[1]);
+    int b = atoi(argv[2]);
+    int* digits=malloc(b * sizeof(int));
+    int i=b;
+    for(i=b; i>0; i--){
+        scanf("%d", &digits[i-1]);
+    } printf("%d\n", base_to_int(b,digits,a));
+    return 0;
+}

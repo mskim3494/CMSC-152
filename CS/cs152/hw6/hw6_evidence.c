@@ -1,0 +1,103 @@
+/* Min Su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* HOMEWORK 5 */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <string.h>
+
+#include "ss.h"
+#include "htbl.h"
+#include "sll.h"
+#include "matrix.h"
+
+void evidence_ss()
+{
+    printf(" === testing squeezed strings ===\n");
+    char test_s[]="hello world";
+    printf(" --- testing capitalize/normalize --- \n");
+    printf("expecting H, %c\n", capitalize('h'));
+    printf("expecting 8, %d\n", normalize('h'));
+    squeezed_string* test_ss= squeeze(test_s);
+    printf(" --- testing ss_read ---\n");
+    show_ss(test_ss);
+    printf("expecting H, %c\n", ss_read(test_ss,0));
+    printf("expecting E, %c\n", ss_read(test_ss,5));
+    printf("expecting ' ', '%c'\n",ss_read(test_ss,6));
+    char* test=unsqueeze(test_ss);
+    printf("expecting HELLO WORLD, %s\n", test);
+    char garbage[]="@$%%&hi my friend$#%";
+    squeezed_string* test_garbage= squeeze(garbage);
+    char* unsqueezed_garbage= unsqueeze(test_garbage);
+    printf("expecting no garbage -> %s\n\n", unsqueezed_garbage);
+    free_squeezed_string(test_ss);
+    free_squeezed_string(test_garbage);
+    free(test);
+    free(unsqueezed_garbage);
+}
+
+void evidence_resize()
+{
+    printf(" === testing is_prime===\n");
+    printf("expecting 1, %d\n", is_prime(7));
+    printf("expecting 0, %d\n", is_prime(224));
+    printf("expecting 1, %d\n\n", is_prime(223));
+    
+    printf(" === testing ht_resize ===\n");
+    int i;
+    htbl* t=ht_new((&good_hash), 3);
+    sll* tmp=malloc(sizeof(sll));
+    tmp->s="i'm hungry";
+    tmp->next=NULL;
+    char* s[]= {"hi","I","love","bannanas","so","much","I","am","so","hungry"};
+    for(i=0;i<10;i++){
+        tmp=sll_cons(s[i],tmp);
+    } ht_ins_list(tmp, t);
+    ht_show(t);
+    printf("original load factor %f\n", ht_load_factor(t));
+    printf("original number of buckets %d\n\n", t->n_buckets);
+    printf("resize\n");
+    ht_resize(&t);
+    printf("new load factor %f\n", ht_load_factor(t));
+    printf("new number of buckets %d\n", t->n_buckets);
+    ht_show(t);
+    ht_free(t);
+    printf("\n");
+}
+
+void evidence_matrix()
+{
+    printf(" === testing matrix ===\n");
+    matrix* test1= matrix_zero(2,2);
+    matrix* test2= matrix_zero(2,2);
+    printf("expecting 0.0, %f\n",test1->entries[1][1]);
+    matrix_write(test1, 0,0, 1);
+    matrix_write(test1, 0,1, 3);
+    matrix_write(test1, 1,0, 5);
+    matrix_write(test1, 1,1, 1.5);
+    printf("expecting 1.5, %f\n",test1->entries[1][1]);
+    matrix_write(test2,0,0,2);
+    matrix_write(test2,0,1,4.0);
+    matrix_write(test2,1,0,2.0);
+    matrix_write(test2,1,1,2.0);
+    printf("expecting 4, %f\n",test2->entries[0][1]);
+    matrix* test3= matrix_add(test1,test2);
+    printf("testing add, expecting 3 7 7 3.5\n");
+    matrix_show(test3);
+    matrix* test4= matrix_mult(test1, test2);
+    printf("testing mult, expecting 8 10 13 23\n");
+    matrix_show(test4);
+    matrix_free(test1);
+    matrix_free(test2);
+    matrix_free(test3);
+    matrix_free(test4);
+}
+
+int main()
+{
+    evidence_resize();
+    evidence_matrix();
+    evidence_ss();
+    return 0;
+}

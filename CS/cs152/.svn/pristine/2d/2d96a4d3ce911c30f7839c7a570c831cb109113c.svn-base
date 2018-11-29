@@ -1,0 +1,4 @@
+evidence: huff.c huffman.c
+	gcc -Wall -g -o huffman huffman.c huff.c
+clean: 
+	rm *~ *dSYM

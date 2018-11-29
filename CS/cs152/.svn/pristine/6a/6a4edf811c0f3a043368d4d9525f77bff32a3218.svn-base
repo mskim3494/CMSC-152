@@ -1,0 +1,1203 @@
+/* ====== v3.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+v3 v3_expr(double x, double y, double z)
+{
+    v3 new;
+    new.x=x;
+    new.y=y;
+    new.z=z;
+    return new;
+}
+
+/* v3_add : add two vectors */
+/* (x,y,z) + (X,Y,Z) = (x+X,y+Y,z+Z) */
+v3 v3_add(v3 v1, v3 v2)
+{
+    v3 newv;
+    newv.x= v1.x + v2.x;
+    newv.y= v1.y + v2.y;
+    newv.z= v1.z + v2.z;
+    return newv;
+}
+
+/* v3_sub : subtract the second vector from the first */
+/* (x,y,z) - (X,Y,Z) = (x-X,y-Y,z-Z) */
+v3 v3_sub(v3 v1, v3 v2)
+{
+    v3 newv;
+    newv.x= v1.x - v2.x;
+    newv.y= v1.y - v2.y;
+    newv.z= v1.z - v2.z;
+    return newv;
+}
+
+/* v3_neg : negate a vector */
+/* -(x,y,z) = (-x,-y,-z) */
+v3 v3_neg(v3 v)
+{
+    v.x= - v.x;
+    v.y= - v.y;
+    v.z= - v.z;
+    return v;
+}
+
+/* v3_scale : scale the components of a vector by scalar s */
+/* s(x,y,z) = (sx,sy,sz) */
+v3 v3_scale(double s, v3 v)
+{
+    v.x= s * v.x;
+    v.y= s * v.y;
+    v.z= s * v.z;
+    return v;
+}
+
+/* v3_dot : compute the dot product of two vectors */
+/* (x,y,z) dot (X,Y,Z) = xX+yY+zZ */
+double v3_dot(v3 v1, v3 v2)
+{
+    return (v1.x * v2.x)+(v1.y * v2.y)+(v1.z * v2.z);
+}
+
+/* v3_mag : compute the magnitude of a vector */
+/* the square root of the sum of the squares of the components */
+double v3_mag(v3 v)
+{
+    return sqrt((v.x*v.x)+(v.y*v.y)+(v.z*v.z));
+}
+
+/* v3_norm : normalize the vector */
+/* i.e., a vector pointing in the same direction whose magnitude is 1 */
+/* - normalize a vector by scaling by 1 over its magnitude */
+/* - if a vector's magnitude is zero, it can't be normalized; return it */
+v3 v3_norm(v3 v)
+{
+    double mag= v3_mag(v);
+    if(mag==0){
+        return v;
+    } else {
+        return v3_scale((1/mag),v);
+    }
+}
+
+double v3_dist(v3 v1, v3 v2)
+{
+    double a= v1.x-v2.x;
+    double b= v1.y-v2.y;
+    double c= v1.z-v2.z;
+    return sqrt(a*a + b*b + c*c);
+}
+
+char *v3_tos(v3 v)
+{
+    char output[300];
+    memset(output, '\0', 300);
+    sprintf(output,"(%.2f, %.2f, %.2f)", v.x,v.y,v.z);
+    return strdup(output);
+}
+
+void v3_show(FILE *f, v3 v)
+{
+    char* output = v3_tos(v);
+    fprintf(f, "%s\n", output);
+    free(output);
+    return;
+}
+
+
+/* ====== rgb.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+/* reject if any component is outside [0.0,1.0] */
+rgb rgb_expr(double r, double g, double b)
+{
+    if((r<0.0||r>1.0)||(g<0.0||g>1.0)||(b<0.0||b>1.0)){
+        fprintf(stderr, "%f, %f, %f\n", r, g, b);
+        exit(1);
+    } else {
+        rgb new;
+        new.r=r;
+        new.g=g;
+        new.b=b;
+        return new;
+    }
+}
+
+/* rgb_modulate : multiply the components or two rgbs */
+/* (r,g,b) * (R,G,B) = (rR,gG,bB) */
+rgb rgb_modulate(rgb c1, rgb c2)
+{
+    rgb new;
+    new.r= c1.r * c2.r;
+    new.g= c1.g * c2.g;
+    new.b= c1.b * c2.b;
+    return new;
+}
+
+double clamp(double s)
+{
+    if(s<0.0){
+        return 0.0;
+    } else if( s>1.0){
+        return 1.0;
+    } else {
+        return s;
+    }
+}
+
+/* rgb_scale : scale each component by given scalar, but */
+/* don't allow any component in the result to fall outside [0,1] */
+rgb rgb_scale(double s, rgb c)
+{
+    rgb new;
+    new.r= clamp(s*c.r);
+    new.g= clamp(s*c.g);
+    new.b= clamp(s*c.b);
+    return new;
+}
+
+/* add components of colors, but */
+/* don't allow any component in the result to exceed 1 */
+rgb rgb_add(rgb c1, rgb c2)
+{
+    rgb new;
+    new.r= clamp(c1.r + c2.r);
+    new.g= clamp(c1.g + c2.g);
+    new.b= clamp(c1.b + c2.b);
+    return new;
+}
+
+char *rgb_tos(rgb c)
+{
+    char output[300];
+    memset(output, '\0', 300);
+    sprintf(output, "(%.2f, %.2f, %.2f)\n", c.r,c.g,c.b);
+    return strdup(output);
+}
+
+void rgb_show(FILE *f, rgb c)
+{
+    char* output =rgb_tos(c);
+    fprintf(f, "%s", output);
+    free(output);
+    return;
+}
+
+rgb bluish(v3 a, v3 b){
+    return rgb_expr(0.5,0.5,0.8);
+}
+
+rgb white(v3 a, v3 b){
+    return rgb_expr(1.0,1.0,1.0);
+}
+
+rgb red(v3 a, v3 b){
+    return rgb_expr(1.0,0.0,0.0);
+}
+
+rgb weird(v3 a, v3 b){
+    if((b.x>0&&b.y>0)||(b.x<0&&b.y<0)){
+        return rgb_expr(0.2,0.2,0.2);
+    } else {
+        return rgb_expr(0.8,0.8,0.8);
+    }
+}
+
+rgb k_silver(v3 cen, v3 loc)
+{
+    return rgb_expr(0.75,0.75,0.75);
+}
+
+/* rgb_show_bytes */
+/* print three integers on [0,255] with spaces in between and a newline */
+/* suitable for use in a PPM */
+void rgb_show_bytes(FILE *f, rgb c)
+{
+    fprintf(f, "%d %d %d\n", (int) (c.r*255),(int)(c.g*255),(int)(c.b*255));
+}
+
+/* ====== ray.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+v3 ray_position(ray r, double t)
+{
+    return v3_add(r.origin, v3_scale(t, r.direction));
+}
+
+char *ray_tos(ray r)
+{
+    char output[300];
+    memset(output, '\0', 300);
+    char* vo= v3_tos(r.origin);
+    char* vd= v3_tos(r.direction);
+    sprintf(output, "origin%s direction%s\n", vo, vd);
+    free(vo);
+    free(vd);
+    return strdup(output);
+}
+
+void ray_show(FILE *f, ray r)
+{
+    char* output= ray_tos(r);
+    fprintf(f, "%s",output);
+    free(output);
+    return;
+}
+/* ====== sphere.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+sphere sphere_expr(v3 v, double r, rgb(*sc)(v3,v3), rgb sh)
+{
+    sphere nsphere;
+    nsphere.center=v;
+    nsphere.radius=r;
+    nsphere.surface_color=sc;
+    nsphere.shine= sh;
+    return nsphere;
+}
+
+char *sphere_tos(sphere s)
+{
+    char output[300];
+    memset(output, '\0', 300);
+    char* c= v3_tos(s.center);
+    char* shine= rgb_tos(s.shine);
+    sprintf(output,"center%s r=%.2f shine%s",
+            c, s.radius, shine);
+    free(c);
+    free(shine);
+    return strdup(output);
+}
+
+void sphere_show(FILE *f, sphere s)
+{
+    char* output = sphere_tos(s);
+    fprintf(f, "%s", output);
+    free(output);
+    return;
+}
+
+
+/* ====== poster.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+poster poster_expr(v3 ulc, double w, double h, rgb(*sc)(v3,v3), rgb sh)
+{
+    poster new;
+    new.upper_left=ulc;
+    new.w=w;
+    new.h=h;
+    new.surface_color=sc;
+    new.shine=sh;
+    return new;
+}
+
+char *poster_tos(poster s)
+{
+    char output[300];
+    memset(output, '\0', 300);
+    char* ulc= v3_tos(s.upper_left);
+    char* shine= rgb_tos(s.shine);
+    sprintf(output,"ulc%s w=%.2f h=%.2f shine%s",
+            ulc,s.w,s.h,shine);
+    free(ulc);
+    free(shine);
+    return strdup(output);
+}
+
+void poster_show(FILE *f, poster s)
+{
+    char* output = poster_tos(s);
+    fprintf(f, "%s", output);
+    free(output);
+    return;
+}
+/* ====== cylinder.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+cylinder cylinder_expr(v3 center, double r, double h, rgb(*sc)(v3,v3), rgb sh)
+{
+    cylinder new;
+    new.center=center;
+    new.radius=r;
+    new.height=h;
+    new.surface_color=sc;
+    new.shine=sh;
+    return new;
+}
+
+char *cylinder_tos(cylinder s) 
+{
+    char output[300];
+    memset(output, '\0', 300);
+    char* center= v3_tos(s.center);
+    char* shine= rgb_tos(s.shine);
+    sprintf(output,"center%s r=%.2f h=%.2f shine%s",
+            center,s.radius,s.height,shine);
+    free(center);
+    free(shine);
+    return strdup(output);
+}
+
+void cylinder_show(FILE *f, cylinder s)
+{
+    char* output = cylinder_tos(s);
+    fprintf(f, "%s", output);
+    free(output);
+    return;
+}
+/* ====== object.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+
+/* ====== obj_list.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+obj_list *ol_cons(object o, obj_list *os)
+{
+    obj_list *tmp= malloc(sizeof(obj_list));
+    tmp->obj=o;
+    tmp->next=os;
+    return tmp;
+}
+
+obj_list *ol_singleton(object s)
+{
+    obj_list *tmp= ol_cons(s, NULL);
+    return tmp;
+}
+
+void ol_show(FILE *f, obj_list *os)
+{
+    obj_list* curr= os;
+    while(curr!=NULL){
+        if(curr->obj.tag==0){
+            fprintf(f, "Sphere= ");
+            sphere_show(f, curr->obj.o.s);
+            curr=curr->next;
+        } else if(curr->obj.tag==1) {
+            fprintf(f, "Poster= ");
+            poster_show(f, curr->obj.o.p);
+            curr=curr->next;
+        } else {
+            fprintf(f, "Cylinder= ");
+            cylinder_show(f, curr->obj.o.c);
+            curr=curr->next;
+        }
+    }
+}
+
+void ol_free(obj_list *ss)
+{
+    if(ss==NULL){
+        return;
+    } else {
+        ol_free(ss->next);
+        free(ss);
+    }
+}
+/* ====== light.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+light new_light(v3 d, rgb color)
+{
+    light new;
+    new.direction=d;
+    new.color=color;
+    return new;
+}
+
+char *light_tos(light l)
+{
+    char output[300];
+    memset(output, '\0', 300);
+    sprintf(output,"dir(%.2f, %.2f, %.2f) color(%.2f, %.2f, %.2f)\n",
+            l.direction.x,l.direction.y,l.direction.z,
+            l.color.r,l.color.g,l.color.b);
+    return strdup(output);
+}
+
+void light_show(FILE *f, light l)
+{
+    char* output= light_tos(l);
+    fprintf(f, "%s", output);
+    free(output);
+}
+/* ====== scene.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+scene new_scene(rgb bg, obj_list *o, light light, rgb amb)
+{
+    scene new;
+    new.bg=bg;
+    new.objects=o;
+    new.light=light;
+    new.amb=amb;
+    return new;
+}
+
+char *scene_tos(scene sc)
+{
+    char output[300];
+    memset(output, '\0', 300);
+    char* bg= rgb_tos(sc.bg);
+    char* light= light_tos(sc.light);
+    char* amb= rgb_tos(sc.amb);
+    sprintf(output,"bg=%slight=%samb=%s",bg, light, amb);
+    free(bg);
+    free(light);
+    free(amb);
+    return strdup(output);
+}
+
+void scene_show(FILE *f, scene sc)
+{
+    char* output= scene_tos(sc);
+    fprintf(f, "*** scene begin\n");
+    fprintf(f, "%s", output);
+    ol_show(f,sc.objects);
+    fprintf(f,"*** scene end\n");
+    free(output);
+}
+/* ====== camera.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+camera new_camera(v3 loc, unsigned h, unsigned w)
+{
+    camera new;
+    new.loc=loc;
+    new.h=h;
+    new.w=w;
+    return new;
+}
+
+char *camera_tos(camera cm)
+{
+    char output[300];
+    memset(output, '\0', 300);
+    sprintf(output,"camera(loc(%.2f, %.2f, %.2f) h=%d W=%d)\n",
+            cm.loc.x,cm.loc.y,cm.loc.z,cm.h,cm.w);
+    return strdup(output);
+}
+
+void camera_show(FILE *f, camera cm)
+{
+    char* output= camera_tos(cm);
+    fprintf(f, "%s", output);
+    free(output);
+}
+/* ====== hit_test.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+hit_test new_ht(int miss, double t, v3 hp, rgb surf, rgb shine, v3 surf_norm)
+{
+    hit_test new;
+    new.miss=miss;
+    new.t=t;
+    new.hit_point=hp;
+    new.surf=surf;
+    new.shine=shine;
+    new.surf_norm= surf_norm;
+    return new;
+}
+
+char *hit_test_tos(hit_test t)
+{
+    char output[300];
+    memset(output, '\0', 300);
+    sprintf(output, "hit=%u, t=%f\n", t.miss, t.t);
+    return strdup(output);
+}
+
+void hit_test_show(FILE *f, hit_test t)
+{
+    char* output= hit_test_tos(t);
+    fprintf(f,"%s", output);
+    free(output);
+}
+/* ====== stage.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+void stage_show(FILE *f, stage stg)
+{
+    camera_show(f, stg.c);
+    scene_show(f,stg.s);
+    return;
+}
+
+camera test_camera_1()
+{
+    return new_camera(v3_expr(0,0,-5), 240, 240);
+}
+
+sphere sphere1()
+{
+    return sphere_expr(v3_expr(0,0,3),1, &bluish, rgb_expr(1.0,1.0,1.0));
+}
+
+light light1()
+{
+    return new_light(v3_norm(v3_expr(-1,1,-1)), rgb_expr(1,1,1));
+}
+
+stage test_stage_1()
+{
+    object s;
+    s.tag= SPHERE;
+    s.o.s= sphere1();
+    obj_list* sphere_list= ol_singleton(s);
+    scene test_scene_1= new_scene(rgb_expr(0.3,0.6,1.0),
+                                  sphere_list, light1(), rgb_expr(0.2,0.2,0.2));
+    stage test_stage_1;
+    test_stage_1.c= test_camera_1();
+    test_stage_1.s= test_scene_1;
+    return test_stage_1;
+}
+
+stage test_stage_2()
+{
+    poster poster1= poster_expr(v3_expr(-1.0,1.0,4.0),2.0, 1.0,
+                                &red, rgb_expr(0,0,0));
+    object p;
+    p.tag= POSTER;
+    p.o.p= poster1;
+    obj_list* poster_list= ol_singleton(p);
+    scene test_scene_2= new_scene(rgb_expr(0.3,0.6,1.0),
+                                  poster_list, light1(), rgb_expr(0.2,0.2,0.2));
+    stage test_stage_2;
+    test_stage_2.c= test_camera_1();
+    test_stage_2.s= test_scene_2;
+    return test_stage_2;
+}
+
+stage test_stage_3()
+{
+    stage test_stage_3;
+    camera test_camera_2= new_camera(v3_expr(0,0,-5), 300, 500);
+    object ws, rs;
+    sphere white_sphere= sphere_expr(v3_expr(-0.5,0.7,3), 0.5, &white,
+                                     rgb_expr(0.5,0.5,0.5));
+    sphere red_sphere= sphere_expr(v3_expr(1,0,4), 1, &red, rgb_expr(1.0,1.0,1.0));
+    ws.tag = SPHERE;
+    rs.tag = SPHERE;
+    ws.o.s= white_sphere;
+    rs.o.s= red_sphere;
+    obj_list* spheres= ol_cons(ws, ol_singleton(rs));
+    scene test_scene_3= new_scene(rgb_expr(0.3,0.6,1.0),
+                                  spheres, light1(), rgb_expr(0.2,0.2,0.2));
+    test_stage_3.c= test_camera_2;
+    test_stage_3.s= test_scene_3;
+    return test_stage_3;
+}
+
+stage test_stage_4()
+{
+    stage test_stage_4;
+    sphere sphere2= sphere_expr(v3_expr(0,0,3), 1,&weird, rgb_expr(0,0,0));
+    object s2;
+    s2.tag= SPHERE;
+    s2.o.s= sphere2;
+    obj_list* sphere2_list= ol_singleton(s2);
+    scene test_scene_4= new_scene(rgb_expr(0.3,0.6,1.0),
+                                  sphere2_list, light1(), rgb_expr(0.2,0.2,0.2));
+    test_stage_4.c= test_camera_1();
+    test_stage_4.s= test_scene_4;
+    return test_stage_4;
+}
+
+stage test_stage_5()
+{
+    stage test_stage_5;
+    cylinder cylinder1= cylinder_expr(v3_expr(0,-2,10.0),.2,4,
+                                      &k_silver, rgb_expr(1.0,1.0,1.0));
+    object c1;
+    c1.tag= 2;
+    c1.o.c= cylinder1;
+    obj_list* cyl_list= ol_singleton(c1);
+    scene test_scene_5= new_scene(rgb_expr(0.4,0.2,0.1), cyl_list,
+                                  light1(), rgb_expr(0.3,0.3,0.3));
+    test_stage_5.c= test_camera_1();
+    test_stage_5.s= test_scene_5;
+    return test_stage_5;
+}
+
+stage test_stage_6()
+{
+    stage test_stage_6;
+    cylinder cylinder1= cylinder_expr(v3_expr(0,-2,0.0),.2,4,
+                                      &k_silver, rgb_expr(0.0,0.0,0.0));
+    object c1;
+    c1.tag= 2;
+    c1.o.c= cylinder1;
+    obj_list* cyl_list= ol_singleton(c1);
+    scene test_scene_6= new_scene(rgb_expr(0.4,0.2,0.1), cyl_list,
+                                  light1(), rgb_expr(0.3,0.3,0.3));
+    test_stage_6.c= test_camera_1();
+    test_stage_6.s= test_scene_6;
+    return test_stage_6;
+}
+
+stage test_stage_7()
+{
+    stage test_stage_7;
+    camera cam1= new_camera(v3_expr(0,0,-5),700,600);
+    sphere sph1= sphere_expr(v3_expr(0,0.3,0),0.4, &bluish, rgb_expr(0.0,0.0,0.0));
+    cylinder cyl1= cylinder_expr(v3_expr(0,-3,0.0),.05,6,
+                                      &k_silver, rgb_expr(0.0,0.0,0.0));
+    cylinder cyl2= cylinder_expr(v3_expr(0,0.3,0.0),.8,0.05,
+                                      &k_silver, rgb_expr(0.0,0.0,0.0));
+    object o1;
+    object o2;
+    object o3;
+    o1.tag= SPHERE;
+    o2.tag= CYLINDER;
+    o3.tag= CYLINDER;
+    o1.o.s= sph1;
+    o2.o.c= cyl1;
+    o3.o.c= cyl2;
+    obj_list* objs= ol_cons(o1, ol_cons(o2, ol_singleton(o3)));
+    scene test_scene_7= new_scene(rgb_expr(0,0,0.25), objs, light1(),
+                                  rgb_expr(0.1,0.1,0.1));
+    test_stage_7.c= cam1;
+    test_stage_7.s= test_scene_7;
+    return test_stage_7;
+}
+
+stage get_stage(unsigned int selection)
+{
+    switch(selection){
+        case 0:
+            return test_stage_1();
+            break;
+        case 1:
+            return test_stage_2();
+            break;
+        case 2:
+            return test_stage_3();
+            break;
+        case 3:
+            return test_stage_4();
+            break;
+        case 4:
+            return test_stage_5();
+        case 5:
+            return test_stage_6();
+        case 6:
+            return test_stage_7();
+        default:
+            fprintf(stderr, "invalid stage selection");
+            exit(1);
+    }
+}
+/* ====== intersect.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+hit_test sphere_intersect(ray r, sphere s)
+{
+    v3 ro= r.origin;
+    v3 rd= r.direction;
+    v3 sc= s.center;
+    double sr= s.radius;
+    v3 A= v3_sub(ro,sc);
+    double B= v3_dot(A, rd);
+    double C= v3_dot(A, A) - (sr*sr);
+    double D= (B*B) -C;
+    double t= -B -sqrt(D);
+    if(D>0 && t>0){
+        v3 hit_point= ray_position(r, t);
+        v3 normalized_pos= v3_norm(v3_sub(hit_point, sc));
+        rgb surf= (*s.surface_color)(sc, hit_point);
+        return new_ht(0, t,hit_point, surf, s.shine, normalized_pos);
+    } else if(D>0 && t<=0){
+        hit_test missed;
+        missed.miss= MISS;
+        return missed;
+    } else {
+        hit_test missed;
+        missed.miss= MISS;
+        return missed;
+    }
+}
+
+hit_test poster_intersect(ray r, poster p)
+{
+    v3 ro= r.origin;
+    v3 rd= r.direction;
+    v3 n= v3_expr(0,0,-1);
+    double d= p.upper_left.z;
+    double t= -((v3_dot(ro,n) +d) / (v3_dot(rd,n)));
+    v3 hp= ray_position(r,t);
+    if(t>0&&(hp.x<(p.upper_left.x+p.w))&&(hp.x>(p.upper_left.x))
+       &&(hp.y>(p.upper_left.y-p.h))&&(hp.y<p.upper_left.y)){
+        rgb surf= (*p.surface_color)(p.upper_left, hp);
+        return new_ht(0, t, hp, surf, p.shine,n);
+    } else {
+        hit_test to_return;
+        to_return.miss= MISS;
+        return to_return;
+    }
+}
+
+hit_test cylinder_intersect(ray r, cylinder c)
+{
+    v3 ro= r.origin;
+    v3 rd= r.direction;
+    v3 rp= v3_expr(rd.x,0,rd.z);
+    v3 np= v3_norm(rp);
+    double mp= v3_mag(rp);
+    double xbar= ro.x - c.center.x;
+    double zbar= ro.z - c.center.z;
+    
+    double A= np.x*np.x + np.z*np.z;
+    double B= 2*(xbar*np.x + zbar*np.z);
+    double C= xbar*xbar + zbar*zbar - c.radius*c.radius;
+    double D= (B*B)- (4*A*C);
+    
+    hit_test to_return;
+    to_return.miss= MISS;
+    
+    if(D>=0){
+        double t_front= (-B-sqrt(D))/(2*A);
+        double t_back= (-B+sqrt(D))/(2*A);
+        v3 p_front= ray_position(r, t_front/mp);
+        v3 p_back= ray_position(r, t_back/mp);
+        double d_front= v3_dist(p_front, ro);
+        double d_back= v3_dist(p_back, ro);
+        if((d_front<d_back)&&	/*grader: set to_return.miss=HIT. */
+           ((p_front.y>=c.center.y)&&(p_front.y<=(c.center.y+c.height)))
+           && (t_front > 0)){
+            rgb surf=(*c.surface_color)(c.center, p_front);
+            v3 norm= v3_norm(v3_sub(p_front,
+                                    v3_expr(c.center.x, p_front.y, c.center.z)));
+            return new_ht(0, t_front, p_front, surf, c.shine,norm);
+        } else if((d_front>d_back)&&
+                  ((p_back.y>=c.center.y)&&(p_back.y<=(c.center.y+c.height)))&&
+                  (t_back > 0)){
+            rgb surf=(*c.surface_color)(c.center, p_back);
+            v3 norm= v3_norm(v3_sub(v3_expr(c.center.x, p_back.y, c.center.z),
+                                    p_back));
+            return new_ht(0, t_back, p_back, surf, c.shine,norm);
+        } else {
+            return to_return;
+        }
+    } else {
+        return to_return;
+    }
+}
+
+
+hit_test intersect(ray r, object obj)
+{
+    switch(obj.tag){
+        case SPHERE :
+            return sphere_intersect(r,obj.o.s);
+        case POSTER :
+            return poster_intersect(r,obj.o.p);
+        case CYLINDER :
+            return cylinder_intersect(r,obj.o.c);
+        default :
+            fprintf(stderr, "invalid tag");
+            exit(1);
+    }
+}
+
+
+
+
+
+
+/* ====== raytracer.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+v3 logical_loc(camera c, unsigned int x, unsigned int y)
+{
+    v3 new_v3;
+    unsigned int h = c.h;
+    unsigned int w = c.w;
+    if(h>w) {
+        new_v3.x = (double)((2.0*x+1.0-w)/h);
+        new_v3.y = 1.0-(2.0*y+1.0)/h;
+        new_v3.z = 0;
+    } else {
+        new_v3.x = -1.0+(2.0*x+1.0)/w;
+        new_v3.y = (double)(h-2.0*y+1.0)/w;
+        new_v3.z = 0;
+    }
+    return new_v3;
+}
+
+
+
+int shadow(v3 p, light l, obj_list *objs)
+{
+    v3 nudge = v3_scale(0.0001, l.direction);
+    v3 lifted = v3_add(p, nudge);
+    ray r;
+    r.origin= lifted;
+    r.direction= l.direction;
+    obj_list *curr= objs;
+    hit_test test;
+    while(curr!= NULL){
+        test= intersect(r, curr->obj);
+        if(test.miss==HIT){
+            return 1;
+        } else if(test.miss==MISS) {
+            curr= curr->next;
+        } 
+    } return 0;
+}
+
+double max(double x, double y)
+{
+    return (x<y)? y : x;
+}
+
+rgb lighting(scene s, ray r, hit_test h)
+{
+    int num;
+    switch(h.miss){
+        case MISS :
+            return s.bg;
+        case HIT :
+            num = shadow(h.hit_point, s.light, s.objects);
+            if(num==1){
+                return rgb_modulate(h.surf, s.amb);
+            } else {
+                rgb diffused= rgb_scale(max(0.0,v3_dot(h.surf_norm,s.light.direction)),
+                                 s.light.color);
+                rgb summed= rgb_add(s.amb, diffused);
+                rgb k= rgb_modulate(h.surf, summed);
+                double nl= v3_dot(h.surf_norm, s.light.direction);
+                if(nl > 0){
+                    v3 R= v3_sub(v3_scale(2*nl, h.surf_norm), s.light.direction);
+                    v3 V= v3_neg(r.direction);
+                    double x= pow(max(v3_dot(R,V),0),6);
+                    rgb s= rgb_scale(x,h.shine);
+                    return rgb_add(k,s);
+                } else {
+                    return k;
+                }
+            }
+        default :
+            fprintf(stderr, "invalid tag");
+            exit(1);
+    }
+}
+
+rgb trace_ray(scene s, ray r)
+{
+    obj_list* curr= s.objects;
+    hit_test test;
+    test.miss= MISS;
+    test.t= INFINITY;
+    while(curr!=NULL){
+        hit_test test1= intersect(r, curr->obj);
+        if(test1.miss==0){
+            if(test1.t < test.t){
+                test=test1;
+            } curr=curr->next;
+        } else {
+            curr= curr->next;
+        }
+    } return lighting(s,r,test);
+}
+
+void render(FILE *f, stage g)
+{
+    int i,j;
+    int x= g.c.h;
+    int y= g.c.w;
+    ray r;
+    r.origin= g.c.loc;
+    fprintf(f,"P3\n%d %d\n255\n", y, x);
+    for(i=0;i<x;i++){
+        for(j=0; j<y;j++){
+            r.direction= v3_norm(v3_sub(logical_loc(g.c, j,i), r.origin));
+            rgb_show_bytes(f, trace_ray(g.s, r));
+        }
+    }
+}
+
+
+/* ====== rt.c ====== */
+
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+int main(int argc, char *argv[])
+{
+    if(argc==1){
+        stage x1=get_stage(0);
+        render(stdout, x1);
+        stage_show(stderr, x1);
+        return 0;
+    } else {
+        int i,j;
+        i=j=0;
+        FILE* f= stdout;
+        for(i=1; i<argc;i++){
+            if(strcmp(argv[i],"-f")==0){
+                f= fopen(argv[i+1],"w");
+            }
+        } for(i=1;i<argc;i++){
+            if(strcmp(argv[i],"-s")==0){
+                j=atoi(argv[i+1]);
+            }
+        }stage x1=get_stage(j);
+        render(f, x1);
+        fclose(f);
+        stage_show(stderr, x1);
+        return 0;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ====== evaluation ====== */
+
+/* === correctness === */
+
+/* specular reflection                 10/10 */
+
+/* cylinder intersection testing       6/10 */	/*grader: set miss/hit incorrectly. */
+/* shadows work correctly              10/10 */
+
+/* rendering multiple objects          10/10 */
+/* ray tracing                          8/8 */
+
+/* === style === */
+
+/* code layout                         8/ 8 */
+/* identifiers are well named          8/ 8 */
+
+/* code is written clearly             8/ 8 */
+/* code is efficient                   8/ 8 */
+
+/* functions are well designed         8/ 8 */
+/* code is well factored               8/ 8 */
+
+/* svn used correctly                  4/ 4 */
+
+/* _total-score_                      96/100 */
+
+/* graded by Haopeng Liu */

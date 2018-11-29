@@ -1,0 +1,597 @@
+===== hw3.h =====
+
+/* Min Su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* Homework 3 */
+
+/* PROBLEM 1 */
+
+/* sum : [int*] [int] -> int */
+/* sums the values and returns the sum */
+int sum(int* a, int alen);
+
+/* squares : [int*] [int] -> void */
+/* squares each of the elements of the array */
+void squares(int* a, int alen);
+
+/* positives : [int*] [int*] -> void */
+/* filters out non-positive values */
+void positives(int* a, int* alen);
+
+/* millionaire : [int*] [int] -> [int] */
+/* adds up assets and returns true if at least a million */
+int millionaire(int* a, int alen);
+
+/* PROBLEM 2 */
+
+/* ati : [char] -> [int] */
+/* takes character in ASCII code and returns int equivalent */
+/* actual function name ASCII_to_int, but shortened
+ * for easier use in str_to_int */
+int ati (char ch);
+
+/* random_to_int : [char*] [int] -> [int] */
+/* takes a non-decimal and turns into int */
+int random_to_int(char* str, int base);
+
+/* str_to_int : [char*] -> [int] */
+/* takes a string in this form and returns its value represented as an int*/
+int str_to_int(char* str);
+
+/* PROBLEM 3 */
+
+/* equalq : [char*] [int] [char*] -> [int]*/
+/* checks for equality */
+int equalq(char* a, int i, char* b);
+
+/* find_replace : [char*] [char*] [char*] [char*] -> [void] */
+/*takes in a string, a string to search for within that string,
+ *a string to replace it with, and a string to store the result in*/
+void find_replace(char* src, char* from, char* to, char* dest);
+
+===== hw3.c =====
+
+/* Min Su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* Homework 3 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include "hw3.h"
+
+/* PROBLEM 1 */
+
+/* sum function */
+/* sums the values and returns the sum */
+int sum(int* a, int alen)
+{
+    int acc=0;
+    int i=0;
+    for(i=0; i<alen; i++){
+        acc += a[i];
+    } return acc;
+}
+
+/* squares function */
+/* squares each of the elements of the array */
+void squares(int* a, int alen)
+{
+    int i=0;
+    for(i=0; i<alen; i++){
+        a[i]= (a[i] * a[i]);
+    } printf("{"); /* this part done for checking purposes */
+    for (i=0; i<alen; i++){
+        if(i==(alen-1)){
+        printf("%d", a[i]);
+        } else {
+        printf("%d,", a[i]);
+        }
+    }printf("}\n");
+}
+
+/* positives function */
+/* filters out non-positive values */
+void positives(int* a, int* alen)
+{
+    int i=0;
+    int j=0;
+    int k= *alen;
+    for(i=0; i<*alen; i++){
+        if (a[i] <= 0){
+            k--;
+        }
+    }
+    for(i=0; i<*alen; i++){
+        if (a[i] > 0){
+            a[j++]=a[i];
+        }
+    } *alen=k;
+    printf("{"); /* this part done for checking purposes */
+    for (i=0; i<*alen; i++){
+        if(i==(*alen-1)){
+            printf("%d", a[(*alen-1)-i]);
+        } else {
+            printf("%d,", a[(*alen-1)-i]);
+        }
+    }printf("}\n");
+}
+
+/* millionaire function */
+/* adds up assets and returns true if at least a million */
+int millionaire(int* a, int alen)
+{
+    int acc=0;
+    int i=0;
+    for (i=0; i<alen; i++){
+        if ((acc + a[i])>=1000000){
+            return 1;
+            break;
+        } else {
+            acc += a[i];
+        }
+    } return 0;
+}
+
+
+/* PROBLEM 2 */
+
+/* takes character in ASCII code and returns int equivalent */
+/* actual function name ASCII_to_int, but shortened
+ * for easier use in str_to_int */
+int ati (char ch)
+{
+    if (47 < ch && ch < 58){
+        return ch-48;
+    } else if ((64 < ch && ch < 71) || ch==88){
+        return ch-55;
+    } else if ((96 < ch && ch < 103) || ch==120){
+        return ch-87;
+    } else if (ch == 45){
+        return ch;
+    }else {
+        fprintf(stderr,"invalid number%c\n", ch);
+    }
+}
+
+/* takes a non-decimal and turns into int */
+int random_to_int(char* str, int base)
+{
+    int i;
+    int length= strlen(str)-1;
+    int acc=0;
+    if (base == 16){
+        for (i=length; i>1; i--){
+            acc+= (ati(str[i]) * pow(base,(length-i)));
+        } return acc;
+    } else if (base == 8){
+        for (i=length; i>0; i--){
+            acc+= (ati(str[i]) * pow(base,(length-i)));
+        } return acc;
+    } else if (base == 10){
+        if (ati(str[0])==45){
+            for (i=1; i<length+1; i++){
+                acc+= (ati(str[i]) * pow(base,length-i));
+            } return -acc;
+        } else {
+            for (i=0; i<length+1; i++){
+                acc+= (ati(str[i]) * pow(base,length-i));
+            } return acc;
+        }
+    } return 5;
+}
+
+/* takes a string in this form and returns its value represented as an int*/
+int str_to_int(char* str)
+{
+    int l= strlen(str);
+    if(str[0]=='0') {
+        if (str[1]=='x'||str[1]=='X'){
+            if (l<=2){
+                fprintf (stderr,"error, wrong input; ");
+            } else {
+                return random_to_int(str, 16);
+            }
+        } else {
+            return random_to_int(str, 8);
+        }
+    } else if (ati(str[0])<10|| str[0]=='-') {
+        return random_to_int(str,10);
+    } else {
+        fprintf(stderr, "wrong input, cannot convert; ");
+    }
+}
+
+/* PROBLEM 3 */
+/* The hardest of them all */
+
+/* checks for equality */
+int equalq(char* a, int i, char* b)
+{
+    int j=0;
+    int l= strlen(b);
+    for (j=0; j<l; j++){
+        if (a[i++] != b[j]){
+            return 0;
+        }
+    } return 1;
+}
+
+/*takes in a string, a string to search for within that string, 
+ *a string to replace it with, and a string to store the result in*/
+
+void find_replace(char* src, char* from, char* to, char* dest)
+{
+    int i=0;
+    int k=0;
+    int d=0;
+    int slength= strlen(src);
+    int fl= strlen(from);
+    int tl= strlen(to);
+    for (i=0; i<slength; i++){
+        if(equalq(src, i, from)==0){
+            dest[d++]=src[i];
+        } else if (equalq(src,i,from)==1){
+            for (k=0; k<tl; k++){
+                dest[d++]= to[k];
+                i += ((fl-1)-tl); /* I know my error is somewhere here but couldn't find it */
+            }
+        }
+    } dest[++d]='\0';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+===== hw3_evidence.c =====
+
+/* Min Su Kim, mskim3494 */
+/* CS152, Winter 2015 */
+/* Homework 3 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "hw3.h"
+
+int digits[]={1,2,3,4,5};
+int digits1[]={-3,0,29,-1};
+int digits2[]={19,20,48,50};
+int digits3[]={0,3,10,-3};
+int digits4[]={0,-1,-2,-3,};
+
+void evidence_sum()
+{
+    printf(" === testing sum === \n");
+    int digits[]={1,2,3,4,5};
+    int digits1[]={-3,0,29,-1};
+    int digits2[]={19,20,48,50};
+    printf("expecting: 15, %d\n", sum(digits, 5));
+    printf("expecting: 25, %d\n", sum(digits1, 4));
+    printf("expecting: 137, %d\n", sum(digits2, 4));
+}
+
+void evidence_squares()
+{
+    printf(" === testing squares === \n");
+    printf("expecting: {1,4,9,16,25}; ");
+    squares(digits, 5);
+    printf("expecting: {0,9,100,9}; ");
+    squares(digits3, 4);
+    printf("expecting: {0,1,4,9}; ");
+    squares(digits4, 4);
+}
+
+void evidence_positives()
+{
+    printf(" === testing positives === \n");
+    int m=4;
+    int n=4;
+    printf("expecting: {29}; ");
+    positives(digits1, &m);
+    printf("expecting: {9,100,9}; ");
+    positives(digits3, &n);
+}
+
+void evidence_millionaire()
+{
+    printf(" === testing millionaire === \n");
+    int notmillionaire[]= {0,1,2,3,4,5};
+    int almostmillionaire[]={200000,700000,99999};
+    int notrealmillionaire[]={0,0,-1,1000000};
+    int toomuchmoney[]={1000003, 1000000, 1000000};
+    printf("expecting 0, %d\n", millionaire(notmillionaire, 6));
+    printf("expecting 0, %d\n", millionaire(almostmillionaire, 3));
+    printf("expecting 0, %d\n", millionaire(notrealmillionaire, 4));
+    printf("expecting 1, %d\n", millionaire(toomuchmoney, 3));
+}
+
+void evidence_ati()
+{
+    printf(" === testing ati === \n");
+    char a[]="aF08";
+    printf("expecting 10, %d\n", ati(a[0]));
+    printf("expecting 15, %d\n", ati(a[1]));
+    printf("expecting 0, %d\n", ati(a[2]));
+    printf("expecting 8, %d\n", ati(a[3]));
+}
+
+void evidence_random_to_decimal()
+{
+    printf(" === testing random_to_decimal === \n");
+    char hex[]="0x1ab3";
+    char oct[]="01234";
+    char dec[]="1234";
+    printf("expecting 6835, %d\n", random_to_int(hex,16));
+    printf("expecting 1234, %d\n", random_to_int(dec,10));
+    printf("expecting 668, %d\n", random_to_int(oct,8));
+}
+
+void evidence_str_to_int()
+{
+    printf(" === testing str_to_int === \n");
+    char hex[]="0xAaeF4";
+    char oct[]="04321";
+    char dec[]="-1234";
+    char hex2[]="0X1234";
+    printf("expecting 700148, %d\n", str_to_int(hex));
+    printf("expecting 2257, %d\n", str_to_int(oct));
+    printf("expecting -1234, %d\n", str_to_int(dec));
+    printf("expecting 4660, %d\n", str_to_int(hex2));
+}
+
+void evidence_equalq()
+{
+    printf(" === testing equalq === \n");
+    char src[] = "hello world";
+    char from[] = "hello";
+    printf("expecting 1, %d\n", equalq(src, 0, from));
+}
+
+void evidence_find_replace()
+{
+    printf(" === testing find_replace === \n");
+    char src[] = "hello world";
+    char from[] = "hello";
+    char to[] = "hi";
+    char* dest = malloc(sizeof(src));
+    
+    find_replace(src,from,to,dest);
+    printf("%s\n",dest);
+    free(dest);
+    
+    char src1[] = "the thing is there, then?";
+    char from1[] = "the";
+    char to1[] = " ";
+    char* dest1 = malloc(sizeof(src1));
+    
+    find_replace(src1,from1,to1,dest1);
+    printf("%s\n",dest1);
+    free(dest1);
+    
+    char src2[] = "foofoofoo";
+    char from2[] = "foo";
+    char to2[] = "bar";
+    char* dest2 = malloc(sizeof(src2));
+    
+    find_replace(src2,from2,to2,dest2);
+    printf("%s\n",dest2);
+    free(dest2);
+}
+
+int main (int argc, char* argv[])
+{
+    evidence_sum();
+    evidence_squares();
+    evidence_positives();
+    evidence_millionaire();
+    evidence_ati();
+    evidence_random_to_decimal();
+    evidence_str_to_int();
+    evidence_equalq();
+    evidence_find_replace();
+    return 0;
+}
+
+===== sum.c =====
+
+/* Min Su Kim, mskim3494 */
+/* CS152, Winter 2015 */
+/* Homework 3 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "hw3.h"
+
+int main(int argc, char *argv[])
+{
+    int alen = atoi(argv[1]);
+    int a[alen];
+    int i;
+    for (i=alen; i>0; i--){
+        scanf("%d", &a[i-1]);
+    }
+    printf("%d\n", sum(a,alen));
+    return 0;
+}
+===== squares.c =====
+
+/* Min Su Kim, mskim3494 */
+/* CS152, Winter 2015 */
+/* Homework 3 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "hw3.h"
+
+int main(int argc, char *argv[])
+{
+    int alen = atoi(argv[1]);
+    int a[alen];
+    int i;
+    for (i=alen; i>0; i--){
+        scanf("%d", &a[i-1]);
+    }
+    squares(a,alen);
+    return 0;
+}
+===== positives.c =====
+
+/* Min Su Kim, mskim3494 */
+/* CS152, Winter 2015 */
+/* Homework 3 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "hw3.h"
+
+int main(int argc, char *argv[])
+{
+    int alen = atoi(argv[1]);
+    int i=0;
+    int* a=malloc(alen*sizeof(int));
+    for(i=alen; i>0; i--){
+        scanf("%d", &a[i-1]);
+    } positives(a, &alen);
+    free(a);
+    return 0;
+}
+===== millionaire.c =====
+
+/* Min Su Kim, mskim3494 */
+/* CS152, Winter 2015 */
+/* Homework 3 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "hw3.h"
+
+int main(int argc, char *argv[])
+{
+    int alen = atoi(argv[1]);
+    int a[alen];
+    int i;
+    for (i=alen; i>0; i--){
+        scanf("%d", &a[i-1]);
+    }
+    if( millionaire(a,alen)==1){
+        printf("yes\n");
+    } else {
+        printf("no\n");
+    }
+    return 0;
+}
+===== replace.c =====
+
+/* Min Su Kim, mskim3494 */
+/* CS152, Winter 2015 */
+/* Homework 3 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "hw3.h"
+
+int main(int argc, char *argv[])
+{
+    int l=strlen(argv[1]);
+    char dest[l];
+    find_replace(argv[1], argv[2],argv[3],dest);
+}
+===== stringtodecimal.c =====
+
+/* Min Su Kim, mskim3494 */
+/* CS152, Winter 2015 */
+/* Homework 3 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "hw3.h"
+
+int main(int argc, char *argv[])
+{
+    printf("%d\n",str_to_int(argv[1]));
+}
+===== Makefile =====
+
+evidence: hw3.c hw3_evidence.c
+	gcc -Wall -o hw3_evidence hw3.c hw3_evidence.c
+
+sum: hw3.c sum.c
+	gcc -Wall -o sum hw3.c sum.c
+
+squares: hw3.c squares.c
+	gcc -Wall -o squares hw3.c squares.c
+
+positives: hw3.c positives.c
+	gcc -Wall -o positives hw3.c positives.c
+
+millionaire: hw3.c millionaire.c
+	gcc -Wall -o millionaire hw3.c millionaire.c
+
+replace: hw3.c replace.c
+	gcc -Wall -o hw3_evidence hw3.c hw3_evidence.c
+
+stringtodecimal: hw3.c stringtodecimal.c
+	gcc -Wall -o stringtodecimal hw3.c stringtodecimal.c
+
+/* ====== evaluation ====== */
+
+/* === correctness === */
+
+/* problem 1 (sum)                     3/ 3 */
+/* problem 1 (squares)                 3/ 3 */
+/* problem 1 (partition)               4/ 4 */
+/* problem 1 (millionaire)             4/ 4 */
+
+/* problem 2 (str_to_int)              14/14 */
+/* problem 3 (find_replace)            8/14 */ //GRADER: This is close, but you are segfaulting, probably due to an invalid reference
+
+/* === style === */
+
+/* code layout                         6/ 6 */
+/* identifiers are well named          6/ 6 */
+/* well-written purposes               4/ 4 */
+/* prototypes with appropriate types   4/ 4 */
+
+/* functions are well designed         6/ 6 */
+/* code is well factored               6/ 6 */
+
+/* code is written clearly             8/ 8 */
+/* code is efficient                   6/ 6 */
+
+/* adequate tests                      8/ 8 */
+/* svn used correctly                  4/ 4 */
+
+/* _total-score_                      94/100 */
+
+/* graded by Benjamin Rohrer */
+

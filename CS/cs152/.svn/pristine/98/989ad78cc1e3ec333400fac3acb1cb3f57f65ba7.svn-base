@@ -1,0 +1,27 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include "adrbook.h"
+
+void vcard_todo(char *s)
+{
+  fprintf(stderr, "TODO [vcard]: %s\nhalting\n", s);
+  exit(1);
+}
+
+vcard *vcard_new(char *cnet, char *email, char *fname, char *lname, char *tel)
+{
+  vcard_todo("vcard_new");
+  return NULL; /* unreachable */
+}
+
+void vcard_free(vcard *c)
+{
+  vcard_todo("vcard_free");
+  return; /* unreachable */
+}
+
+void vcard_show(vcard *c)
+{
+  vcard_todo("vcard_show");
+  return; /* unreachable */
+}

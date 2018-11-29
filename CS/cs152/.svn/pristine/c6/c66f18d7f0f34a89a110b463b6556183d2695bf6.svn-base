@@ -1,0 +1,53 @@
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+obj_list *ol_cons(object o, obj_list *os)
+{
+    obj_list *tmp= malloc(sizeof(obj_list));
+    tmp->obj=o;
+    tmp->next=os;
+    return tmp;
+}
+
+obj_list *ol_singleton(object s)
+{
+    obj_list *tmp= ol_cons(s, NULL);
+    return tmp;
+}
+
+void ol_show(FILE *f, obj_list *os)
+{
+    obj_list* curr= os;
+    while(curr!=NULL){
+        if(curr->obj.tag==0){
+            fprintf(f, "Sphere= ");
+            sphere_show(f, curr->obj.o.s);
+            curr=curr->next;
+        } else {
+            fprintf(f, "Poster= ");
+            poster_show(f, curr->obj.o.p);
+            curr=curr->next;
+        }
+    }
+}
+
+void ol_free(obj_list *ss)
+{
+    if(ss==NULL){
+        return;
+    } else {
+        ol_free(ss->next);
+        free(ss);
+    }
+}

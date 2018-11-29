@@ -1,0 +1,209 @@
+/* Min Su Kim, mskim3494*/
+/* CS152, Winter 2015 */
+/* Homework 1 */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+/* Problem 1 */
+
+unsigned int gcd( unsigned int a, unsigned int b)
+{
+    if(a < b){
+        return gcd(b,a);
+    }
+    else if (b == 0){
+        return a;
+    }
+    else {
+        return gcd(b, (a % b));
+    }
+}
+
+/* Problem 2 */
+
+double area_sphere ( double radius )
+{
+  if ( radius < 0 ) {
+    fprintf (stderr, "Negative radius input %f", radius);
+  } else {
+    return 4 * M_PI * radius * radius;
+  }
+}
+
+/* Problem 3 */
+
+int early_term_fee (int days)
+{
+    if ( days < 0 ){
+        fprintf ( stderr, "Days cannot be negative, %d", days );
+    } else {
+    if ( days <= 14 ){
+        return 0;
+    } else if ( days >= 720 ){
+        return 0;
+    } else {
+        return 325 - ((days / 30) * 10);
+    }
+    }
+}
+
+/* Problem 4 */
+
+/* GRADER'S NOTE: Firstly, in generating variables first-fifth, consider ways to
+   to generate these variables with less repetition, either through judicious
+   use of a mod call or helper functions. Secondly, be super careful using '|', 
+   which is NOT a logical operator, but rather a bit-wise operator- as in, don't
+   use it until you learn bit-wise operations and actually want to use them.
+   Thirdly, each of your if statements, needs an else. The function only gets to
+   the single else when it fails the first test. Otherwise, it does not get there.
+   Fourthly, your function does not consider the case where the phone number is
+   more than 10 digits. (-7 for the function, -2 for efficiency). -MK */
+int is_valid_tel_num ( long long int num )
+{
+    
+    int first,second,third,fourth,fifth;
+    
+    first = (int) (num / 10E8);
+    second = (int) (num / 10E7 - (10*first));
+    third = (int) ((num / 10E6)
+                   - (10*second)
+                   - (100 * first));
+    fourth = (int) ((num / 10E5)
+                    - (10*third)
+                    - (100 * second)
+                    - (1000 * first));
+    fifth = (int) ((num / 10E4)
+                   - (10*fourth)
+                   - (100*third)
+                   - (1000*second)
+                   - (10000*first));
+    
+    if ( first > 1){
+        if ( second == 0 | second == 1){
+            if ( fourth > 1 ){
+                if ( fifth > 1 ){
+                    return 1;
+                }
+            }
+        }
+    } else {
+        return 0;
+    }
+    
+}
+
+/* Testing the functions */
+/*
+int main()
+{
+    printf ("Expect 5, gcd(40,15)=%d\n", gcd(40, 15));
+    printf ("Expect 7, gcd(7,77)=%d\n", gcd(7, 77));
+    printf ("Expect 3, gcd(3,0)=%d\n", gcd(3, 0));
+    printf ("Expect 615.752160, area_sphere(7)=%f\n", area_sphere(7));
+    printf ("Expect 0.000000, area_sphere(0)=%f\n", area_sphere(0));
+    printf ("Expect 12.566371, area_sphere(1)=%f\n", area_sphere(1));
+    printf ("Expect error message for negative input area_sphere(-1)\n",
+            area_sphere(-1));
+    printf ("Expect 325, early_term_fee(29)=%d\n", early_term_fee(29));
+    printf ("Expect 315, early_term_fee(30)=%d\n", early_term_fee(30));
+    printf ("Expect 0, early_term_fee(2)=%d\n", early_term_fee(2));
+    printf ("Expect 95, early_term_fee(719)=%d\n", early_term_fee(719));
+    printf ("Expect 1, is_valid_tel_num(7039833394)=%d\n",
+            is_valid_tel_num(7039833394));
+    printf ("Expect 1, is_valid_tel_num(3134557875)=%d\n",
+            is_valid_tel_num(3134557875));
+    printf ("Expect 0, is_valid_tel_num(1134557875)=%d\n",
+            is_valid_tel_num(1134557875));
+    printf ("Expect 0, is_valid_tel_num(7400833394)=%d\n",
+            is_valid_tel_num(7400833394));
+    printf ("Expect 0, is_valid_tel_num(7132133394)=%d\n",
+            is_valid_tel_num(7132133394));
+} */
+
+/* Grader's main function */
+int main(int argc, char *argv[]) {
+  printf("Tests for gcd()\n");
+  printf("M   N     EXPECTED  ACTUAL\n");
+  printf("%2d  %2d    %2d        %2d\n", 1, 1, 1, gcd(1, 1));
+  printf("%2d  %2d    %2d        %2d\n", 3, 4, 1, gcd(3, 4));
+  printf("%2d  %2d    %2d        %2d\n", 21, 7, 7, gcd(21, 7));
+  printf("%2d  %2d    %2d        %2d\n", 7, 21, 7, gcd(7, 21));
+  printf("%2d  %2d    %2d        %2d\n", 36, 12, 12, gcd(36, 12));
+  printf("%2d  %2d    %2d        %2d\n", 15, 25, 5, gcd(15, 25));
+  printf("\n\n");;
+
+  printf("Tests for area_sphere()\n");
+  printf("RADIUS     EXPECTED  ACTUAL\n");
+  printf("%6lf   %8.5lf  %8.5lf\n", 0.0, 0.0, area_sphere(0.0));
+  printf("%6lf   %8.5lf  %8.5lf\n", 1.0, 12.56637, area_sphere(1.0));
+  printf("%6lf   %8.5lf  %8.5lf\n", 1.5, 28.27433, area_sphere(1.5));
+  printf("%6lf   %8.5lf  %8.5lf\n", 2.0, 50.26548, area_sphere(2.0));
+  printf("\n\n");
+    
+  printf("Tests for early_term_fee()\n");
+  printf("DAYS  EXPECTED  ACTUAL\n");
+  printf("%3d   %3d       %3d\n", 0, 0, early_term_fee(0));
+  printf("%3d   %3d       %3d\n", 1, 0, early_term_fee(1));
+  printf("%3d   %3d       %3d\n", 14, 0, early_term_fee(14));
+  printf("%3d   %3d       %3d\n", 15, 325, early_term_fee(15));
+  printf("%3d   %3d       %3d\n", 29, 325, early_term_fee(29));
+  printf("%3d   %3d       %3d\n", 30, 315, early_term_fee(30));
+  printf("%3d   %3d       %3d\n", 31, 315, early_term_fee(31));
+  printf("%3d   %3d       %3d\n", 59, 315, early_term_fee(59));
+  printf("%3d   %3d       %3d\n", 60, 305, early_term_fee(60));
+  printf("%3d   %3d       %3d\n", 61, 305, early_term_fee(61));
+  printf("%3d   %3d       %3d\n", 719, 95, early_term_fee(719));
+  printf("%3d   %3d       %3d\n", 720, 0, early_term_fee(720));
+  printf("%3d   %3d       %3d\n", 721, 0, early_term_fee(721));
+  printf("\n\n");
+
+  printf("Tests for is_valid_tel_num()\n");
+  printf("TELNO        EXPECTED  ACTUAL\n");
+  printf("%11lld  %d         %d\n", 13125551212LL, 0, 
+  is_valid_tel_num(13125551212LL));
+  printf("%11lld  %d         %d\n", 3125551212LL, 1, 
+  is_valid_tel_num(3125551212LL));
+  printf("%11lld  %d         %d\n", 7735551212LL, 0, 
+  is_valid_tel_num(7735551212LL));
+  printf("%11lld  %d         %d\n", 1125551212LL, 0, 
+  is_valid_tel_num(1125551212LL));
+  printf("%11lld  %d         %d\n", 125551212LL, 0, 
+  is_valid_tel_num(125551212LL));
+  printf("%11lld  %d         %d\n", 3121551212LL, 0, 
+  is_valid_tel_num(3121551212LL));
+  printf("%11lld  %d         %d\n", 3125151212LL, 0, 
+  is_valid_tel_num(3125151212LL));
+
+  printf("\n");
+}
+
+
+/* ====== evaluation ====== */
+
+/* === correctness === */
+
+/* problem 1 (gcd)                   16/16 */
+/* problem 2 (area_sphere)            8/ 8 */
+/* problem 3 (early_term_fee)        12/12 */
+/* problem 4 (is_valid_tel_num)       5/12 */
+
+/* === style === */
+
+/* code layout                        8/ 8 */
+/* identifiers are well named         6/ 6 */
+
+/* functions are well designed        6/ 6 */ /* n/a this week */
+/* code is well factored              6/ 6 */ /* i.e., don't repeat blocks of code */
+
+/* code is written clearly            8/ 8 */ /* i.e., avoid Byzantine logic */
+/* code is efficient                  4/ 6 */ /* i.e., avoid blatant inefficiencies */
+
+/* adequate tests                     8/ 8 */
+/* svn used correctly                 4/ 4 */
+
+/* _total-score_                   100/100 */
+
+/* graded by Marc Kealhofer */
+

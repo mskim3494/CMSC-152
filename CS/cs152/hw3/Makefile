@@ -1,0 +1,20 @@
+evidence: hw3.c hw3_evidence.c
+	gcc -Wall -o hw3_evidence hw3.c hw3_evidence.c
+
+sum: hw3.c sum.c
+	gcc -Wall -o sum hw3.c sum.c
+
+squares: hw3.c squares.c
+	gcc -Wall -o squares hw3.c squares.c
+
+positives: hw3.c positives.c
+	gcc -Wall -o positives hw3.c positives.c
+
+millionaire: hw3.c millionaire.c
+	gcc -Wall -o millionaire hw3.c millionaire.c
+
+replace: hw3.c replace.c
+	gcc -Wall -o hw3_evidence hw3.c hw3_evidence.c
+
+stringtodecimal: hw3.c stringtodecimal.c
+	gcc -Wall -o stringtodecimal hw3.c stringtodecimal.c

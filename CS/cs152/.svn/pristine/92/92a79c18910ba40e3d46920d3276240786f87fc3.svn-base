@@ -1,0 +1,155 @@
+/* Min su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* Homework 4 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+
+/* PROBLEM 1 */
+
+/* adding : [char*] [char*] [int] -> [void] */
+/* consumes a string and copies it onto the second string starting
+ * from position n */
+void adding(char* str, char* newstring, int n);
+
+/* concat : [char**] [unsigned int] -> [char*] */
+/* consumes an array of strings and returns a pointer to a new heap-allocated 
+ * string containing the concatenation of each of the strings in the array, in order.*/
+char* concat(char** strs, unsigned int nstrs);
+
+/* PROBLEM 2 */
+
+/* int_to_binary : [unsigned int] -> [char*] */
+/* change a decimal number to binary */
+char* uint_to_binary(unsigned int n);
+
+/* binary_to_unit : [char*] -> [unsigned int] */
+/* change a binary number to decimal */
+unsigned int binary_to_uint(char* b);
+
+/* PROBLEM 3 */
+
+struct observations {
+    double temp;
+    double humid;
+    double wind;
+};
+
+struct range {
+    double min, max;
+};
+
+struct preferences {
+    struct range temps, humids, winds;
+};
+
+struct stats { double avg, min, max; };
+
+struct climate {
+    struct stats temps, humids, winds;
+};
+
+struct compatibility {
+    unsigned int good_days, bad_days;
+    double happiness;
+    struct observations **good_data, **bad_data;
+};
+
+/* getclimate : [struct climate*] [struct observations*] [int] -> [void] */
+/* takes an array of observations and an existing climate and
+ * destructively updates based on the new information */
+void getclimate(struct climate* clima, struct observations* a, int nobs);
+
+/* makepreferences : [struct range] [struct range] [struct range] -> [struct preferences*] */
+/* takes ranges as inputs for the members of the preferences */
+struct preferences* makepreferences(struct range a, struct range b, struct range c);
+
+/* makestat : [double] [double] [double] -> [struct stats] */
+/* takes in members of struct stats and creates a new stats */
+struct stats makestat(double avg, double min, double max);
+
+/* getobs : [struct observations*] [int] [int] -> [double] */
+/* get desired observation for convenience */
+double getobs(struct observations* a, int i, int b);
+
+/* analyze_weather : [struct observations*] [unsigned int] [struct climate*] 
+ *                   [struct preferences*] [struct compatibility*] -> [void] */
+/* analyze the weather according to my preferences */
+void analyze_weather(struct observations* observations,
+                     unsigned int nobservations,
+                     struct climate* climate,
+                     struct preferences* preferences,
+                     struct compatibility* compatibility);
+
+/* PROBLEM 4 */
+
+struct element {
+    char* name;
+    unsigned int weight;
+};
+
+struct molecule {
+    char* name;
+    unsigned int nelements;
+    struct element** elements;
+    unsigned int* atoms;
+    /* there are atoms[i] atoms of element elements[i] */
+};
+
+union chemical {
+    struct element* element;
+    struct molecule* molecule;
+};
+
+enum chemical_tag {
+    ELEMENT, MOLECULE
+};
+
+struct tagged_chemical {
+    enum chemical_tag tag;
+    union chemical chemical;
+};
+
+struct mixture {
+    char* name;
+    unsigned int nchemicals;
+    struct tagged_chemical* chemicals;
+    double* moles;
+    /* there are moles[i] moles of chemical chemicals[i] */
+};
+
+struct element* new_element(char* name, unsigned int weight);
+
+struct molecule* new_molecule(char* name, unsigned int nelements,
+                              struct element** elements, unsigned int* atoms);
+
+struct mixture* new_mixture(char* name, unsigned int nchemicals,
+                            struct tagged_chemical* chemicals, double* moles);
+
+/* chemical_weight : [struct tagged_chemical*] -> [unsigned int] */
+/* calculates the weight in grams of the tagged chemical */
+unsigned int chemical_weight (struct tagged_chemical chemtag);
+
+/* mixture_weight : [struct mixture*] -> [unsigned int] */
+/* calculates the weight in grams of the specified mixture */
+unsigned int mixture_weight(struct mixture* mixture);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

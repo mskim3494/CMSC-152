@@ -1,0 +1,21 @@
+/* Min Su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* HOMEWORK 5 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "huff.h"
+
+void evidence()
+{
+    char test1[]="sEnSELess1";
+    huff_show(huffman_code(test1));
+}
+
+int main()
+{
+    evidence();
+    return 0;
+}

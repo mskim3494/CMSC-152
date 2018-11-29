@@ -1,0 +1,161 @@
+/* Min Su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* Homework 3 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+/* PROBLEM 1 */
+
+/* sum function */
+/* sums the values and returns the sum */
+int sum(int* a, int alen)
+{
+    int acc=0;
+    int i=0;
+    for(i=0; i<alen; i++){
+        acc += a[i];
+    } return acc;
+}
+
+/* squares function */
+/* squares each of the elements of the array */
+void squares(int* a, int alen)
+{
+    int i=0;
+    for(i=0; i<alen; i++){
+        a[i]= (a[i] * a[i]);
+    } printf("%d\n", sum(a, alen));
+}
+
+/* positives function */
+/* filters out non-positive values */
+void positives(int* a, int* alen)
+{
+    int i=0;
+    int j=0;
+    int k= *alen;
+    for(i=0; i<*alen; i++){
+        if (a[i] <= 0){
+            k--;
+        }
+    }
+    for(i=0; i<*alen; i++){
+        if (a[i] > 0){
+            a[j++]=a[i];
+        }
+    } *alen=k;
+    printf("%d\n", sum(a, *alen));
+}
+
+/* millionaire function */
+/* adds up assets and returns true if at least a million */
+int millionaire(int* a, int alen)
+{
+    int acc=0;
+    int i=0;
+    for (i=0; i<alen; i++){
+        if ((acc += a[i])>=1000000){
+            return 1;
+            break;
+        } else {
+            acc += a[i];
+        }
+    } return 0;
+}
+
+
+/* PROBLEM 2 */
+
+/* takes character in ASCII code and returns int equivalent */
+/* actual function name ASCII_to_int, but shortened
+ * for easier use in str_to_int */
+int ati (char ch)
+{
+    if (47 < ch && ch < 58){
+        return ch-48;
+    } else if (64 < ch && ch < 91){
+        return ch-55;
+    } else if (96 < ch && ch < 123){
+        return ch-87;
+    } else {
+        printf("out of bounds ");
+        return ch;
+    }
+}
+
+/* takes a non-decimal and turns into int */
+int random_to_int(char* str, int base)
+{
+    int i;
+    int length= strlen(str)-1;
+    int acc=0;
+    if (base == 16){
+        for (i=length; i>1; i--){
+            acc+= (ati(str[i]) * pow(base,(length-i)));
+        } return acc;
+    } else if (base == 8){
+        for (i=length; i>0; i--){
+            acc+= (ati(str[i]) * pow(base,(length-i)));
+        } return acc;
+    } else if (base == 10){
+        for (i=0; i<length+1; i++){
+            acc+= (ati(str[i]) * pow(base,length-i));
+        } return acc;
+    }
+}
+
+/* takes a string in this form and returns its value represented as an int*/
+int str_to_int(char* str)
+{
+    if(str[0]=='0') {
+        if (str[1]=='x'||str[1]=='X'){
+            random_to_int(str, 16);
+        } else {
+            random_to_int(str, 8);
+        }
+    } else if (ati(str[0])<10) {
+        random_to_int(str,10);
+    } else {
+        printf("wrong input, cannot convert\n");
+    }
+}
+
+int nesting(char* str)
+{
+    random_to_int(str,16);
+}
+
+int main()
+{
+    int digits[]={1,2,3,4,5};
+    int digits1[]={-2, -10, 3, 10, -1};
+    int digits3[]={5, -10, 30, 10, 0};
+    int digits2[]={0,999999,1};
+    int digits4[]={5, -10, 30, -10, 2};
+    int m=5;
+    int n=5;
+    int l=5;
+    char str[]="a1234";
+    char hex[]="0x1ab3";
+    char oct[]="01234";
+    char dec[]="1234";
+    printf("%d\n",sum(digits, 5));
+    squares(digits, 5);
+    squares(digits1, 5);
+    positives(digits1,&m);
+    positives(digits3,&n);
+    positives(digits4,&l);
+    printf("%d\n",millionaire(digits2, 3));
+    printf("%d\n", millionaire(digits1, 5));
+    printf("%d\n", str_to_int(str));
+    printf("%d\n", str_to_int(hex));
+    printf("%d\n", str_to_int(oct));
+    printf("%d\n", str_to_int(dec));
+    printf("%d\n", random_to_int(hex,16));
+    printf("%d\n", random_to_int(dec,10));
+    printf("%d\n", nesting(hex));
+    return 0;
+}

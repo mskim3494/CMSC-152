@@ -1,0 +1,88 @@
+/* Min Su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* HOMEWORK 5 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "huff.h"
+
+int ceiling(int x, int y)
+{
+    if(y<=0){
+        fprintf(stderr, "non-positive or zero divisor");
+        exit(1);
+    } else {
+        return (x%y)? (x/y)+1 : (x/y);
+    }
+}
+
+void bit_set(unsigned char* s, int index, char* code, int bit_num)
+{
+    int len= strlen(code);
+    int i;
+    for(i=0;i<len;i++){
+        if(bit_num<0){
+            bit_num=7;
+            index++;
+            if(code[i]=='1'){
+                s[index]|= (1<<bit_num--);
+            } else {
+                bit_num--;
+            }
+        } else {
+            if(code[i]=='1'){
+                s[index]|= (1<<bit_num--);
+            } else {
+                bit_num--;
+            }
+        }
+    }
+}
+
+int main(int argc, char* argv[])
+{
+    FILE* open_file= fopen(argv[1],"w");
+    char* string= argv[2];
+    huff* huffman= huffman_code(string);
+    int len= strlen(string);
+    int i,acc;
+    char* s;
+    acc=0;
+    fprintf(open_file,"%d\n", huff_leaves(huffman));
+    show_code(huffman,NULL, open_file);
+    for(i=0;i<len;i++){
+        s=getencoding(string[i], huffman, NULL);
+        acc+= strlen(s);
+        free(s);
+    } fprintf(open_file,"%d\n", acc);
+    
+    int index=0;
+    int bit_num=7;
+    int num_bytes= ceiling(acc, 8);
+    unsigned char coded_bytes[num_bytes];
+    for (i=0; i<num_bytes; i++){
+        coded_bytes[i]=0;
+    } for(i=0;i<len;i++){
+        if(bit_num<0){
+            bit_num=8+bit_num;
+            index++;
+            s=getencoding(string[i], huffman, NULL);
+            fprintf(open_file,"%s",s);
+            bit_set(coded_bytes, index, s, bit_num);
+            bit_num-= strlen(s);
+            free(s);
+        } else {
+            s=getencoding(string[i], huffman, NULL);
+            fprintf(open_file,"%s",s);
+            bit_set(coded_bytes, index, s, bit_num);
+            bit_num-= strlen(s);
+            free(s);
+        }
+    } fprintf(open_file,"\n");
+    for (i=0; i<num_bytes; i++){
+        fputc(coded_bytes[i],open_file);
+    } fclose(open_file);
+    return 0;
+}

@@ -1,0 +1,66 @@
+/* Min Su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* HOMEWORK 5 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "huff.h"
+
+void evidence()
+{
+    printf(" === testing count_letters === \n");
+    char test1[]="sEnSELessness1";
+    int* array=count_letters(test1);
+    printf("expecting 4, %d\n", array[5]);
+    printf("expecting 1, %d\n", array[12]);
+    printf("expecting 6, %d\n", array[19]);
+    printf("expecting 1, %d\n", array[28]);
+    
+    printf(" === testing huff_singleton ===\n");
+    huff* h1= huff_singleton('L', 1);
+    huff* h2= huff_singleton('S', 6);
+    printf("expecting L 1, %c %d\n",h1->h.leaf.c, h1->h.leaf.n);
+    printf("expecting S 6, %c %d\n",h2->h.leaf.c, h2->h.leaf.n);
+    
+    printf(" === testing huff_weight === \n");
+    printf("expecting 1, %d\n", huff_weight(h1));
+    printf("expecting 6, %d\n", huff_weight(h2));
+    
+    printf(" === testing huff_insert ===\n");
+    huff_list* lst_h1= new_hufflist(h1,NULL);
+    huff_list* new_lst= huff_insert(lst_h1, h2);
+    huff* h3= huff_singleton(5+64,array[5]);
+    huff_list* flist= huff_insert(new_lst, h3);
+    printf("expecting L 1, %c %d\n", new_lst->h->h.leaf.c, new_lst->h->h.leaf.n);
+    printf("expecting E 4, %c %d\n", flist->next->h->h.leaf.c,
+           flist->next->h->h.leaf.n);
+    
+    printf(" === testing singleton_lst ===\n");
+    huff* tmph= huff_singleton('I',0);
+    printf("bp");
+    huff_list* tmp=malloc(sizeof(huff_list));
+    printf("hmm?");
+    tmp->next=NULL;
+    tmp->h=tmph;
+    printf("breakpoint");
+    tmp=huff_insert(tmp, huff_singleton(69,array[5]));
+    printf("breakpoint");
+    
+    huff_list* singletons= singleton_lst(array);
+    printf("expecting L 1, %c %d", singletons->h->h.leaf.c,
+           singletons->h->h.leaf.n);
+    
+    
+    
+    
+    free(h1);
+    free(h2);
+}
+
+int main()
+{
+    evidence();
+    return 0;
+}

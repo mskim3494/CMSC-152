@@ -1,0 +1,121 @@
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+/* reject if any component is outside [0.0,1.0] */
+rgb rgb_expr(double r, double g, double b)
+{
+    if((r<0.0||r>1.0)||(g<0.0||g>1.0)||(b<0.0||b>1.0)){
+        fprintf(stderr, "%f, %f, %f\n", r, g, b);
+        exit(1);
+    } else {
+        rgb new;
+        new.r=r;
+        new.g=g;
+        new.b=b;
+        return new;
+    }
+}
+
+/* rgb_modulate : multiply the components or two rgbs */
+/* (r,g,b) * (R,G,B) = (rR,gG,bB) */
+rgb rgb_modulate(rgb c1, rgb c2)
+{
+    rgb new;
+    new.r= c1.r * c2.r;
+    new.g= c1.g * c2.g;
+    new.b= c1.b * c2.b;
+    return new;
+}
+
+double clamp(double s)
+{
+    if(s<0.0){
+        return 0.0;
+    } else if( s>1.0){
+        return 1.0;
+    } else {
+        return s;
+    }
+}
+
+/* rgb_scale : scale each component by given scalar, but */
+/* don't allow any component in the result to fall outside [0,1] */
+rgb rgb_scale(double s, rgb c)
+{
+    rgb new;
+    new.r= clamp(s*c.r);
+    new.g= clamp(s*c.g);
+    new.b= clamp(s*c.b);
+    return new;
+}
+
+/* add components of colors, but */
+/* don't allow any component in the result to exceed 1 */
+rgb rgb_add(rgb c1, rgb c2)
+{
+    rgb new;
+    new.r= clamp(c1.r + c2.r);
+    new.g= clamp(c1.g + c2.g);
+    new.b= clamp(c1.b + c2.b);
+    return new;
+}
+
+char *rgb_tos(rgb c)
+{
+    char output[300];
+    memset(output, '\0', 300);
+    sprintf(output, "(%.2f, %.2f, %.2f)\n", c.r,c.g,c.b);
+    return strdup(output);
+}
+
+void rgb_show(FILE *f, rgb c)
+{
+    char* output =rgb_tos(c);
+    fprintf(f, "%s", output);
+    free(output);
+    return;
+}
+
+rgb bluish(v3 a, v3 b){
+    return rgb_expr(0.5,0.5,0.8);
+}
+
+rgb white(v3 a, v3 b){
+    return rgb_expr(1.0,1.0,1.0);
+}
+
+rgb red(v3 a, v3 b){
+    return rgb_expr(1.0,0.0,0.0);
+}
+
+rgb weird(v3 a, v3 b){
+    if((b.x>0&&b.y>0)||(b.x<0&&b.y<0)){
+        return rgb_expr(0.2,0.2,0.2);
+    } else {
+        return rgb_expr(0.8,0.8,0.8);
+    }
+}
+
+rgb k_silver(v3 cen, v3 loc)
+{
+    return rgb_expr(0.75,0.75,0.75);
+}
+
+/* rgb_show_bytes */
+/* print three integers on [0,255] with spaces in between and a newline */
+/* suitable for use in a PPM */
+void rgb_show_bytes(FILE *f, rgb c)
+{
+    fprintf(f, "%d %d %d\n", (int) (c.r*255),(int)(c.g*255),(int)(c.b*255));
+}

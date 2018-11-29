@@ -1,0 +1,48 @@
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+rgb any(v3 a, v3 b){
+    return rgb_expr(0.5,0.5,0.8);
+}
+
+void test_case()
+{
+    camera test_camera_1= new_camera(v3_expr(0,0,-5), 240, 240);
+    object s;
+    sphere sphere1= sphere_expr(v3_expr(0,0,3),1, &any, rgb_expr(0,0,0));
+    light light1= new_light(v3_norm(v3_expr(-1,1,-1)), rgb_expr(1,1,1));
+    s.tag= SPHERE;
+    s.o.s= sphere1;
+    obj_list* sphere_list= ol_cons(s, NULL);
+    scene test_scene_1= new_scene(rgb_expr(0.3,0.6,1.0),
+                                   sphere_list, light1, rgb_expr(0.2,0.2,0.2));
+    stage test_stage;
+    test_stage.c= test_camera_1;
+    test_stage.s= test_scene_1;
+    render(stdout, test_stage);
+}
+
+
+
+
+
+int main(int argc, char *argv[])
+{
+    if(argc==1){
+        test_case();
+        return 0;
+    } else {
+        return 0;
+    }
+}

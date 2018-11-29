@@ -1,0 +1,89 @@
+/* Min Su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* HOMEWORK 5 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "huff.h"
+
+charlist* cl_cons(char c, charlist cs)
+{
+    charlist* tmp= malloc(sizeof(charlist));
+    tmp->c=c;
+    tmp->next=cs;
+    return tmp;
+}
+
+int cl_length(cs)
+{
+    if(cs==NULL){
+        return 0;
+    } else {
+        return 1+cl_length(cs->cs);
+    }
+}
+
+charlist* cl_tos_rev(cs)
+{
+    int l= cl_length(cs);
+    int i=0;
+    charlist* curr;
+    char* nstring= malloc(l*sizeof(char));
+    curr=cs;
+    while(curr!=NULL){
+        if(l<0){
+            break;
+        } else {
+            nstring[l--]=curr->c;
+            curr= curr->next;
+        }
+    }
+}
+
+int huff_leaves(huff* h)
+{
+    switch (h->tag){
+        case LEAF :
+            return 1;
+        case NODE :
+            return 1 + huff_leaves(h->h.node.lsub)
+            + huff_leaves(h->h.node.rsub);
+        default :
+            fprintf(stderr, "invalid tag");
+            exit(1);
+    }
+}
+
+void show_code_aux(huff *h, charlist *cs)
+{
+    char* bits;
+    char *go_left, *go_right;
+    switch(h->tag){
+        case LEAF:
+            bits=cl_tos_rev(cs);
+            printf("%c=%s\n", h->h.leaf.c,bits);
+            free(bits);
+            return;
+        case NODE :
+            go_left=cl_cons('0',cs);
+            go_right=cl_cons('1',cs);
+            show_code_aux(h->h.node.lsub, go_left);
+            show_code_aux(h->h.node.rsub, go_right);
+            free(go_left);
+            free(go_right);
+            return;
+        default:
+            fprintf(stderr, "invalid tag");
+            exit(1);
+    }
+}
+
+int main(int argc, char* argv[])
+{
+    huff* huffman= huffman_code(argv[1]);
+    printf("%d\n", huff_leaves(huffman));
+    show_code_aux(huffman, NULL);
+    return 0;
+}

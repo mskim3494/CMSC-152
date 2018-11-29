@@ -1,0 +1,51 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include "adrbook.h"
+
+void bst_todo(char *s)
+{
+  fprintf(stderr, "TODO [bst]: %s\nhalting\n", s);
+  exit(1);
+}
+
+bst *bst_singleton(vcard *c)
+{
+  bst_todo("bst_singleton");
+  return NULL; /* unreachable */
+}
+
+int bst_insert(bst *t, vcard *c)
+{
+  bst_todo("bst_insert");
+  return 0; /* unreachable */
+}
+
+unsigned int bst_num_entries(bst *t)
+{
+  bst_todo("bst_num_entries");
+  return 0; /* unreachable */
+}
+
+unsigned int bst_height(bst *t)
+{
+  bst_todo("bst_height");
+  return 0; /* unreachable */
+}
+
+vcard *bst_search(bst *t, char *cnet, int *n_comparisons)
+{
+  bst_todo("bst_search");
+  return NULL; /* unreachable */
+}
+
+unsigned int bst_c(bst *t, char c)
+{
+  bst_todo("bst_c");
+  return 0; /* unreachable */
+}
+
+void bst_free(bst *t)
+{
+  bst_todo("bst_free");
+  return; /* unreachable */
+}

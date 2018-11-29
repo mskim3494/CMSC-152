@@ -1,0 +1,28 @@
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+poster poster_expr(v3 ulc, double w, double h, rgb(*sc)(v3,v3), rgb sh)
+{
+    poster new;
+    new.upper_left=ulc;
+    new.w=w;
+    new.h=h;
+    new.surface_color=sc;
+    new.shine=sh;
+    return new;
+}
+/*
+char *poster_tos(poster s);
+
+void poster_show(FILE *f, poster s);*/

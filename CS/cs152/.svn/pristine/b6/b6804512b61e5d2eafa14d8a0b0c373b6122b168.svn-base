@@ -1,0 +1,184 @@
+/* Min Su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* HOMEWORK 5 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "huff.h"
+
+/* HUFFMAN CODE */
+
+char* normalize (char c)
+{
+    if (c<91 && c>64){
+        return c-64;
+    } else if (c<123 && c>96){
+        return c-96;
+    } else if (c == 32) {
+        return c-32;
+    } else {
+        return 28;
+    }
+}
+
+int* count_letters(char* c)
+{
+    int l= strlen(c);
+    int i;
+    int* tmp=malloc(28*sizeof(int));
+    for(i=0; i<29; i++){
+        tmp[i]=0;
+    } for(i=0; i<l; i++){
+        tmp[normalize(c[i])]+= 1;
+    } return tmp;
+}
+
+huff *huff_singleton(char c, int n);
+{
+    huff* tmp= malloc(sizeof(huff));
+    tmp->tag=LEAF;
+    tmp->h.leaf={c,n};
+    return tmp;
+}
+
+huff_list* singleton_lst(int* arr)
+{
+    int i;
+    huff_list* tmp=malloc(sizeof(huff_list));
+    tmp->next=NULL;
+    tmp->h= huff_singleton("init",0);
+    for(i=1;i<28;i++){
+        if(arr[i] != 0){
+             huff_insert(tmp, huff_singleton(arr[i]+64,NULL));
+        }
+    } if (arr[0]!=0){
+        huff_insert(tmp,huff_singleton(32,NULL));
+    } return tmp->next;
+}
+
+int huff_weight(huff *h);
+{
+    switch(h->tag){
+        case LEAF :
+            return h->h.leaf.n;
+            break;
+        case NODE :
+            return (h->h.node.n + huff_weight(h->h.node.lsub)
+                   + huff_weigth(h->h.node.rsub));
+            break;
+        default :
+            fprintf(stderr, "wrong tag, not hufftree");
+            exit(1);
+    }
+}
+
+huff_list* new_hufflist(huff* h, huff_list* list)
+{
+    huff_list* tmp= malloc(sizeof(huff_list));
+    tmp->h=h;
+    tmp->next=list;
+    return tmp;
+}
+
+huff_list* huff_insert(huff_list* list, huff* h)
+{
+    if(list->next == NULL){
+        if(list->h->tag != LEAF){
+            fprintf(stderr, "not leaf!");
+        } else {
+            if (huff_weight(h) <= huff_weight(list->h)){
+                huff_list* tmp= new_hufflist(h, list);
+                return tmp;
+            } else {
+                huff_list* tmp= new_hufflist(h,NULL);
+                list->next=tmp;
+                return list;
+            }
+        }
+    } else {
+        ins_middle(list, list->next, new_hufflist(h,NULL));
+        return list;
+    }
+}
+
+void ins_middle(huff_list* prev, huff_list* rest, huff_list* h)
+{
+    if(huff_weight(h->h) > huff_weight(rest->h)){
+        ins_middle(rest, rest->rest, h);
+    } else if (huff_weight(h->h) <= huff_weight(rest->h)){
+        prev->next= h;
+        h->next=rest;
+    }
+}
+
+huff *huff_merge(huff *h1, huff *h2);
+{
+    huff* nhuff= malloc(sizeof(huff));
+    nhuff->tag= NODE;
+    nhuff->h.node.lsub= h1;
+    nhuff->h.node.rsub= h2;
+    nhuff->h.node.n= huff_weight(h1)+huff_weight(h2);
+    return nhuff;
+}
+
+huff* final_huff(huff_list* list)
+{
+    if (list->next == NULL){
+        return list;
+    } else if (list->next->next == NULL){
+        return huff_merge(list->h, list->next->h);
+    } else {
+        new_hufflist( huff_merge(list->h, list->next->h), list->next->next);
+    }
+}
+
+void huff_lst_free(huff_list* h)
+{
+    if(h->next == NULL){
+        free(h);
+    } else {
+        huff_lst_free(h->next);
+        free(h);
+    }
+}
+
+huff* huffman_code(char* s)
+{
+    int* occurences= count_letters(s);
+    huff_list* singletons= singleton_lst(occurences);
+    return final_huff(singletons);
+    free(occurences);
+}
+
+void huff_show(huff *h)
+{
+    if(h->tag == 0){
+        printf("| %c %d | ", h->h.leaf.c, h->h.leaf.n);
+    } else if(h->tag == 1){
+        printf(" %d ", h->h.node.n);
+        huff_show(h->h.node.lsub);
+        huff_show(h->h.node.rsub);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

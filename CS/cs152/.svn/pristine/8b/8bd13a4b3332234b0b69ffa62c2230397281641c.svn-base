@@ -1,0 +1,185 @@
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+void stage_show(FILE *f, stage stg)
+{
+    camera_show(f, stg.c);
+    scene_show(f,stg.s);
+    return;
+}
+
+camera test_camera_1()
+{
+    return new_camera(v3_expr(0,0,-5), 240, 240);
+}
+
+sphere sphere1()
+{
+    return sphere_expr(v3_expr(0,0,3),1, &bluish, rgb_expr(1.0,1.0,1.0));
+}
+
+light light1()
+{
+    return new_light(v3_norm(v3_expr(-1,1,-1)), rgb_expr(1,1,1));
+}
+
+stage test_stage_1()
+{
+    object s;
+    s.tag= SPHERE;
+    s.o.s= sphere1();
+    obj_list* sphere_list= ol_singleton(s);
+    scene test_scene_1= new_scene(rgb_expr(0.3,0.6,1.0),
+                                  sphere_list, light1(), rgb_expr(0.2,0.2,0.2));
+    stage test_stage_1;
+    test_stage_1.c= test_camera_1();
+    test_stage_1.s= test_scene_1;
+    return test_stage_1;
+}
+
+stage test_stage_2()
+{
+    poster poster1= poster_expr(v3_expr(-1.0,1.0,4.0),2.0, 1.0,
+                                &red, rgb_expr(0,0,0));
+    object p;
+    p.tag= POSTER;
+    p.o.p= poster1;
+    obj_list* poster_list= ol_singleton(p);
+    scene test_scene_2= new_scene(rgb_expr(0.3,0.6,1.0),
+                                  poster_list, light1(), rgb_expr(0.2,0.2,0.2));
+    stage test_stage_2;
+    test_stage_2.c= test_camera_1();
+    test_stage_2.s= test_scene_2;
+    return test_stage_2;
+}
+
+stage test_stage_3()
+{
+    stage test_stage_3;
+    camera test_camera_2= new_camera(v3_expr(0,0,-5), 300, 500);
+    object ws, rs;
+    sphere white_sphere= sphere_expr(v3_expr(-0.5,0.7,3), 0.5, &white,
+                                     rgb_expr(0.5,0.5,0.5));
+    sphere red_sphere= sphere_expr(v3_expr(1,0,4), 1, &red, rgb_expr(1.0,1.0,1.0));
+    ws.tag = SPHERE;
+    rs.tag = SPHERE;
+    ws.o.s= white_sphere;
+    rs.o.s= red_sphere;
+    obj_list* spheres= ol_cons(ws, ol_singleton(rs));
+    scene test_scene_3= new_scene(rgb_expr(0.3,0.6,1.0),
+                                  spheres, light1(), rgb_expr(0.2,0.2,0.2));
+    test_stage_3.c= test_camera_2;
+    test_stage_3.s= test_scene_3;
+    return test_stage_3;
+}
+
+stage test_stage_4()
+{
+    stage test_stage_4;
+    sphere sphere2= sphere_expr(v3_expr(0,0,3), 1,&weird, rgb_expr(0,0,0));
+    object s2;
+    s2.tag= SPHERE;
+    s2.o.s= sphere2;
+    obj_list* sphere2_list= ol_singleton(s2);
+    scene test_scene_4= new_scene(rgb_expr(0.3,0.6,1.0),
+                                  sphere2_list, light1(), rgb_expr(0.2,0.2,0.2));
+    test_stage_4.c= test_camera_1();
+    test_stage_4.s= test_scene_4;
+    return test_stage_4;
+}
+
+stage test_stage_5()
+{
+    stage test_stage_5;
+    cylinder cylinder1= cylinder_expr(v3_expr(0,-2,10.0),.2,4,
+                                      &k_silver, rgb_expr(1.0,1.0,1.0));
+    object c1;
+    c1.tag= 2;
+    c1.o.c= cylinder1;
+    obj_list* cyl_list= ol_singleton(c1);
+    scene test_scene_5= new_scene(rgb_expr(0.4,0.2,0.1), cyl_list,
+                                  light1(), rgb_expr(0.3,0.3,0.3));
+    test_stage_5.c= test_camera_1();
+    test_stage_5.s= test_scene_5;
+    return test_stage_5;
+}
+
+stage test_stage_6()
+{
+    stage test_stage_6;
+    cylinder cylinder1= cylinder_expr(v3_expr(0,-2,0.0),.2,4,
+                                      &k_silver, rgb_expr(0.0,0.0,0.0));
+    object c1;
+    c1.tag= 2;
+    c1.o.c= cylinder1;
+    obj_list* cyl_list= ol_singleton(c1);
+    scene test_scene_6= new_scene(rgb_expr(0.4,0.2,0.1), cyl_list,
+                                  light1(), rgb_expr(0.3,0.3,0.3));
+    test_stage_6.c= test_camera_1();
+    test_stage_6.s= test_scene_6;
+    return test_stage_6;
+}
+
+stage test_stage_7()
+{
+    stage test_stage_7;
+    camera cam1= new_camera(v3_expr(0,0,-5),700,600);
+    sphere sph1= sphere_expr(v3_expr(0,0.3,0),0.4, &bluish, rgb_expr(0.0,0.0,0.0));
+    cylinder cyl1= cylinder_expr(v3_expr(0,-3,0.0),.05,6,
+                                      &k_silver, rgb_expr(0.0,0.0,0.0));
+    cylinder cyl2= cylinder_expr(v3_expr(0,0.3,0.0),.8,0.05,
+                                      &k_silver, rgb_expr(0.0,0.0,0.0));
+    object o1;
+    object o2;
+    object o3;
+    o1.tag= SPHERE;
+    o2.tag= CYLINDER;
+    o3.tag= CYLINDER;
+    o1.o.s= sph1;
+    o2.o.c= cyl1;
+    o3.o.c= cyl2;
+    obj_list* objs= ol_cons(o1, ol_cons(o2, ol_singleton(o3)));
+    scene test_scene_7= new_scene(rgb_expr(0,0,0.25), objs, light1(),
+                                  rgb_expr(0.1,0.1,0.1));
+    test_stage_7.c= cam1;
+    test_stage_7.s= test_scene_7;
+    return test_stage_7;
+}
+
+stage get_stage(unsigned int selection)
+{
+    switch(selection){
+        case 0:
+            return test_stage_1();
+            break;
+        case 1:
+            return test_stage_2();
+            break;
+        case 2:
+            return test_stage_3();
+            break;
+        case 3:
+            return test_stage_4();
+            break;
+        case 4:
+            return test_stage_5();
+        case 5:
+            return test_stage_6();
+        case 6:
+            return test_stage_7();
+        default:
+            fprintf(stderr, "invalid stage selection");
+            exit(1);
+    }
+}

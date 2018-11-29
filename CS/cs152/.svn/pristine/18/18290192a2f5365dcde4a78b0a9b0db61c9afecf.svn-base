@@ -1,0 +1,72 @@
+/* Min Su Kim, mskim3494*/
+/* CS152, Winter 2015 */
+/* Homework 1 */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+/* Problem 1 */
+
+unsigned int gcd( unsigned int a, unsigned int b)
+{
+    if(a < b){
+        return gcd(b,a);
+    }
+    else if (b == 0){
+        return a;
+    }
+    else {
+        return gcd(b, (a % b));
+    }
+}
+
+/* Problem 2 */
+
+double area_sphere ( double radius )
+{
+    return 4 * M_PI * radius * radius;
+}
+
+/* Problem 3 */
+
+int early_term_fee (int days)
+{
+    if ( days <= 14 )
+    {
+        return 0;
+    }
+    else if ( days >= 720 )
+    {
+        return 0;
+    }
+    else
+    {
+        return 325 - ((days / 30) * 10);
+    }
+}
+
+/* Problem 4
+ 
+ int is_valid_tel_num ( long long int num )
+ {
+ if ( num > 10000000000 | num < 1999999999 ){
+ return 0;
+ } else if ( )
+ }
+ */
+
+int main()
+{
+    printf ("%d\n", gcd(40, 15)); /* expect 5*/
+    printf ("%d\n", gcd(7, 77)); /* expect 7*/
+    printf ("%d\n", gcd(3, 0)); /* expect 3*/
+    printf ("%f\n", area_sphere(7)); /* expect 615.752160 */
+    printf ("%f\n", area_sphere(0)); /* expect 0.000000 */
+    printf ("%f\n", area_sphere(1)); /* expect 12.566371 */
+    printf ("%d\n", early_term_fee(29)); /* expect 325 */
+    printf ("%d\n", early_term_fee(30)); /* expect 315 */
+    printf ("%d\n", early_term_fee(2)); /* expect 0 */
+    printf ("%d\n", early_term_fee(719)); /* expect 95 */
+}
+

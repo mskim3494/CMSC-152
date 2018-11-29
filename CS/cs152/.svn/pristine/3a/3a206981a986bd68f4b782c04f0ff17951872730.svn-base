@@ -1,0 +1,75 @@
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+v3 logical_loc(camera c, unsigned int x, unsigned int y)
+{
+    unsigned sq_max= (c.h<=c.w) ? c.w : c.h;
+    double x_zero= (c.w<c.h)? (-c.w/c.h) : -1;
+    double y_zero= (c.h<c.w)? (-c.h/c.w) : -1;
+    return v3_expr(x_zero+(x/sq_max), y_zero+(y/sq_max),0);
+}
+
+int shadow(v3 p, light l, obj_list *objs)
+{
+    v3 nudge = v3_scale(0.0001, l.direction);
+    v3 lifted = v3_add(p, nudge);
+    ray r;
+    r.origin= p;
+    r.direction= l.direction;
+    curr= objs;
+    hit_test test;
+    while(curr!= NULL){
+        test= intersect(r, curr->obj);
+        if(intersect.miss==0){
+            return 1;
+        } else if(intersect.miss==1) {
+            curr= curr->next;
+        }
+    } return 0;
+}
+
+double max(double x, double y)
+{
+    return (x<y)? y : x;
+}
+
+rgb lighting(scene s, ray r, hit_test h)
+{
+    switch(h.miss){
+        case MISS :
+            return scene.bg;
+        case HIT :
+            int bool_shadow = shadow(h.hit_point, s.light, s.objects);
+            if(bool_shadow==1){
+                return rgb_modulate(h.surf, s.amb);
+            } else {
+                return rgb_scale(max(0,v3_dot(h.surf_norm,s.light.direction)),
+                                 s.light.color);
+            }
+        default :
+            fprintf(stderr, "invalid tag");
+            exit(1);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+

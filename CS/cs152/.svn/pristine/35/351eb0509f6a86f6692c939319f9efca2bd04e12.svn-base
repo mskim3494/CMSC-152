@@ -1,0 +1,111 @@
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+
+
+v3 logical_loc(camera c, unsigned int x, unsigned int y)
+{
+    unsigned sq_max= (c.h<=c.w) ? c.w : c.h;
+    double x_zero= (c.w<c.h)? (double)-(c.w/c.h) : -1.0;
+    double y_zero= (c.h<c.w)? (double)(c.h/c.w) : 1.0;
+    return v3_expr((x_zero + ((2.0*(x+1.0)-1.0)/sq_max)),
+                   (y_zero-((2.0*(y+1.0)-1.0)/sq_max)),0);
+}
+
+
+
+int shadow(v3 p, light l, obj_list *objs)
+{
+    v3 nudge = v3_scale(0.0001, l.direction);
+    v3 lifted = v3_add(p, nudge);
+    ray r;
+    r.origin= lifted;
+    r.direction= l.direction;
+    obj_list *curr= objs;
+    hit_test test;
+    while(curr!= NULL){
+        test= intersect(r, curr->obj);
+        if(test.miss==0){
+            return 1;
+        } else if(test.miss==1) {
+            curr= curr->next;
+        } 
+    } return 0;
+}
+
+double max(double x, double y)
+{
+    return (x<y)? y : x;
+}
+
+rgb lighting(scene s, ray r, hit_test h)
+{
+    int num;
+    switch(h.miss){
+        case MISS :
+            return s.bg;
+        case HIT :
+            num = shadow(h.hit_point, s.light, s.objects);
+            if(num==1){
+                return rgb_modulate(h.surf, s.amb);
+            } else {
+                rgb diffused= rgb_scale(max(0,v3_dot(h.surf_norm,s.light.direction)),
+                                 s.light.color);
+                rgb summed= rgb_add(s.amb, diffused);
+                return rgb_modulate(h.surf, summed);
+            }
+        default :
+            fprintf(stderr, "invalid tag");
+            exit(1);
+    }
+}
+
+rgb trace_ray(scene s, ray r)
+{
+    obj_list* curr= s.objects;
+    hit_test test;
+    test.miss= MISS;
+    test.t= INFINITY;
+    while(curr!=NULL){
+        hit_test test1= intersect(r, curr->obj);
+        if(test1.miss==0){
+            if(test1.t < test.t){
+                test=test1;
+            } curr=curr->next;
+        } else {
+            curr= curr->next;
+        }
+    } return lighting(s,r,test);
+}
+
+void render(FILE *f, stage g)
+{
+    int i,j;
+    int x= g.c.h;
+    int y= g.c.w;
+    ray r;
+    r.origin= g.c.loc;
+    for(i=0;i<y;i++){
+        for(j=0; j<x;j++){
+            r.direction= v3_norm(v3_sub(logical_loc(g.c, j,i), r.origin));
+            rgb_show_bytes(f, trace_ray(g.s, r));
+        }
+    }
+}
+
+
+
+
+
+

@@ -1,0 +1,28 @@
+/* Min Su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* HOMEWORK 5 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "huff.h"
+
+int main(int argc, char* argv[])
+{
+    char* string= argv[1];
+    huff* huffman= huffman_code(string);
+    int len= strlen(string);
+    int i,acc;
+    acc=0;
+    printf("%d\n", huff_leaves(huffman));
+    huffcode* hc= hc_cons('#',"",NULL);
+    hc=show_code_aux(huffman, NULL,hc);
+    printf("%c", hc->letter);
+    for(i=0;i<len;i++){
+        acc+= strlen(getencoding(string[i], hc));
+    } printf("%d\n", acc);
+    for(i=0; i<len;i++){
+        printf("%s", getencoding(string[i],hc));
+    } return 0;
+}

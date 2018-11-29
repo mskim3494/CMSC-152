@@ -1,0 +1,839 @@
+===== hw4.h =====
+
+/* Min su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* Homework 4 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+
+/* PROBLEM 1 */
+
+/* adding : [char*] [char*] [int] -> [void] */
+/* consumes a string and copies it onto the second string starting
+ * from position n */
+void adding(char* str, char* newstring, int n);
+
+/* concat : [char**] [unsigned int] -> [char*] */
+/* consumes an array of strings and returns a pointer to a new heap-allocated 
+ * string containing the concatenation of each of the strings in the array, in order.*/
+char* concat(char** strs, unsigned int nstrs);
+
+/* PROBLEM 2 */
+
+/* int_to_binary : [unsigned int] -> [char*] */ //#grader: careful; it's uint.
+/* change a decimal number to binary */
+char* uint_to_binary(unsigned int n);
+
+/* binary_to_unit : [char*] -> [unsigned int] */
+/* change a binary number to decimal */
+unsigned int binary_to_uint(char* b);
+
+/* PROBLEM 3 */
+
+struct observations {
+    double temp;
+    double humid;
+    double wind;
+};
+
+struct range {
+    double min, max;
+};
+
+struct preferences {
+    struct range temps, humids, winds;
+};
+
+struct stats { double avg, min, max; };
+
+struct climate {
+    struct stats temps, humids, winds;
+};
+
+struct compatibility {
+    unsigned int good_days, bad_days;
+    double happiness;
+    struct observations **good_data, **bad_data;
+};
+
+/* getclimate : [struct climate*] [struct observations*] [int] -> [void] */
+/* takes an array of observations and an existing climate and
+ * destructively updates based on the new information */
+void getclimate(struct climate* clima, struct observations* a, int nobs);
+
+/* makepreferences : [struct range] [struct range] [struct range] -> [struct preferences*] */
+/* takes ranges as inputs for the members of the preferences */
+struct preferences* new_preferences(struct range a,
+                                    struct range b, struct range c);
+
+/* makestat : [double] [double] [double] -> [struct stats] */
+/* takes in members of struct stats and creates a new stats */
+struct stats makestat(double avg, double min, double max);
+
+/* getobs : [struct observations*] [int] [int] -> [double] */
+/* get desired observation for convenience */
+double getobs(struct observations* a, int i, int b);
+
+/* analyze_weather : [struct observations*] [unsigned int] [struct climate*] 
+ *                   [struct preferences*] [struct compatibility*] -> [void] */
+/* analyze the weather according to my preferences */
+void analyze_weather(struct observations* observations,
+                     unsigned int nobservations,
+                     struct climate* climate,
+                     struct preferences* preferences,
+                     struct compatibility* compatibility);
+
+/* PROBLEM 4 */
+
+struct element {
+    char* name;
+    unsigned int weight;
+};
+
+struct molecule {
+    char* name;
+    unsigned int nelements;
+    struct element** elements;
+    unsigned int* atoms;
+    /* there are atoms[i] atoms of element elements[i] */
+};
+
+union chemical {
+    struct element* element;
+    struct molecule* molecule;
+};
+
+enum chemical_tag {
+    ELEMENT, MOLECULE
+};
+
+struct tagged_chemical {
+    enum chemical_tag tag;
+    union chemical chemical;
+};
+
+struct mixture {
+    char* name;
+    unsigned int nchemicals;
+    struct tagged_chemical* chemicals;
+    double* moles;
+    /* there are moles[i] moles of chemical chemicals[i] */
+};
+
+/* new_element : [char*] [unsigned int] -> [struct element*] */
+/* creates a new element pointer */
+struct element* new_element(char* name, unsigned int weight);
+
+/* new_molecule : [char*] [unsigned int] 
+ *                [struct elements**] [unsigned int*] -> [struct molecule*] */
+/* creates a new molecule pointer */
+struct molecule* new_molecule(char* name, unsigned int nelements,
+                              struct element** elements, unsigned int* atoms);
+
+/* new_mixture : [char*] [unsigned int]
+ *                [struct elements**] [unsigned int*] -> [struct molecule*] */
+/* creates a new mixture */
+struct mixture* new_mixture(char* name, unsigned int nchemicals,
+                            struct tagged_chemical* chemicals, double* moles);
+
+/* chemical_weight : [struct tagged_chemical*] -> [unsigned int] */
+/* calculates the weight in grams of the tagged chemical */
+unsigned int chemical_weight (struct tagged_chemical chemtag);
+
+/* mixture_weight : [struct mixture*] -> [unsigned int] */
+/* calculates the weight in grams of the specified mixture */
+unsigned int mixture_weight(struct mixture* mixture);
+
+===== hw4.c =====
+
+/* Min su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* Homework 4 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "hw4.h"
+
+/* PROBLEM 1 */
+
+void adding(char* str, char* newstring, int n)
+{
+    int i,j;
+    j= strlen(str);
+    for (i=0; i<j; i++){
+        newstring[n++]= str[i];
+    } return;
+}
+
+char* concat(char** strs, unsigned int nstrs)
+{
+    int i;
+    int n=0;
+    int acc=0;
+    for (i=0; i< nstrs; i++){
+        acc+=strlen(strs[i]);
+    }
+    char* newstring=malloc(acc); /*correct size? */
+    //#grader: one too few; need space for '\0'. -1
+    for (i=0; i<nstrs; i++){
+        adding(strs[i], newstring, n);
+        n+= strlen(strs[i]);
+        }
+    //#grader: student did not terminate string. -1
+    return newstring;
+}
+
+/* PROBLEM 2 */
+
+char* uint_to_binary(unsigned int n)
+{
+    int i;
+    int size=0;
+    unsigned int tmp=n;
+    while (tmp>0){
+        tmp=tmp/2;
+        size++;
+    }
+    char* binary=malloc(size);
+    //#grader: one too few; -1
+    if (n==0){
+        binary[0]='0'; //#grader: only works because of system-dependent malloc
+        return binary; //	  implementation; your code hasn't explicitely
+    }	       	       //	  allocated any memory in this case.
+    binary[size]='\0';
+    for (i=size; i>0; i--){
+        if((n%2)==1){
+            binary[i-1]='1';
+        } else {
+            binary[i-1]='0';
+        }
+        n= n/2;
+    } //#grader: does not terminate string. -1
+    return binary;
+}
+
+unsigned int binary_to_uint(char* b)
+{
+    int i;
+    int l= strlen(b);
+    unsigned int uint=0;
+    for (i=0; i<l; i++){
+        uint+= (b[i]-48)*pow(2,(l-1)-i);
+    }
+    return uint;
+}
+
+/* PROBLEM 3 */
+
+
+void analyze_weather(struct observations* observations,
+                     unsigned int nobservations,
+                     struct climate* climate,
+                     struct preferences* preferences,
+                     struct compatibility* compatibility)
+{
+    int i,j,k;
+    i=j=k=0;
+    compatibility->good_days=0;
+    compatibility->bad_days=0;
+    compatibility->good_data= malloc(nobservations*sizeof(struct observations*)); //#grader: lines > 80 chars. -1 layout
+    compatibility->bad_data= malloc(nobservations*sizeof(struct observations*));
+    getclimate(climate, observations, nobservations);
+    for(i=0; i<nobservations; i++){
+        if(observations[i].temp>= preferences->temps.min &&
+           observations[i].temp<= preferences->temps.max){
+            if(observations[i].humid>= preferences->humids.min &&
+               observations[i].humid<= preferences->humids.max){
+                if(observations[i].wind>= preferences->winds.min &&
+                   observations[i].wind<= preferences->winds.max){
+                    compatibility->good_days += 1;
+                    compatibility->good_data[j++]= &observations[i];
+                }else { compatibility->bad_data[k++]=&observations[i];
+                }
+            }else { compatibility->bad_data[k++]=&observations[i];
+            }
+        } else { compatibility->bad_data[k++]=&observations[i];
+        }
+    } compatibility->happiness =
+    (double) compatibility->good_days / nobservations;
+    compatibility->bad_days =
+    nobservations - compatibility->good_days;
+} //#grader: unnecessarily-nested if statements. -1 layout
+
+struct preferences* new_preferences(struct range a, struct range b, struct range c)
+{
+    struct preferences* tmp=malloc(sizeof(struct preferences));
+    tmp->temps= a;
+    tmp->humids= b;
+    tmp->winds= c;
+    return tmp;
+}
+
+struct stats makestat(double avg, double min, double max)
+{
+    struct stats temp;
+    temp.avg=avg;
+    temp.min=min;
+    temp.max=max;
+    return temp;
+}
+
+double getobs(struct observations* a, int i, int b)
+{
+    if(b==0){
+        return a[i].temp;
+    } if (b==1){
+        return a[i].humid;
+    } if (b==2){
+        return a[i].wind;
+    } else {
+        fprintf(stderr, "wrong input b %d\n", b);
+        exit(1);
+    }
+}
+
+void getclimate(struct climate* clima, struct observations* a, int nobs)
+{
+    int i,b;
+    double avg, max, min;
+    struct stats stats[3];
+    for (b=0; b<3; b++){
+        avg=0.0;
+        min= getobs(a,0,b);
+        max= getobs(a,0,b);
+        for (i=0; i<nobs; i++){
+            avg+= getobs(a, i, b);
+            if(min > getobs(a, i, b)){
+                min = getobs(a, i, b);
+            }
+            if(max < getobs(a, i, b)){
+                max = getobs(a, i, b);
+            }
+        }avg= avg/nobs;
+        stats[b]= makestat(avg, min, max);
+    }clima->temps= stats[0];
+    clima->humids= stats[1];
+    clima->winds= stats[2];
+    return;
+}
+
+/* PROBLEM 4 */
+
+unsigned int mixture_weight(struct mixture* mixture)
+{
+    int i;
+    double acc=0;
+    unsigned int n= mixture->nchemicals;
+    for(i=0; i<n; i++){
+        acc+= (chemical_weight(mixture->chemicals[i])
+               * mixture->moles[i]);
+    } return (unsigned int) acc;
+}
+
+struct element* new_element(char* name, unsigned int weight)
+{
+    struct element* tmp= malloc(sizeof(struct element));
+    tmp->name= name;
+    tmp->weight= weight;
+    return tmp;
+}
+
+struct molecule* new_molecule(char* name, unsigned int nelements,
+                              struct element** elements, unsigned int* atoms)
+{
+    struct molecule* tmp= malloc(sizeof(struct molecule));
+    tmp->name=name;
+    tmp->nelements= nelements;
+    tmp->elements= elements;
+    tmp->atoms= atoms;
+    return tmp;
+}
+
+struct mixture* new_mixture(char* name, unsigned int nchemicals,
+                            struct tagged_chemical* chemicals, double* moles)
+{
+    struct mixture* tmp= malloc(sizeof(struct mixture));
+    tmp->name =name;
+    tmp->nchemicals =nchemicals;
+    tmp->chemicals =chemicals;
+    tmp->moles =moles;
+    return tmp;
+}
+
+unsigned int chemical_weight (struct tagged_chemical chemtag)
+{
+    int i,j;
+    unsigned int acc=0;
+    if(chemtag.tag == 0){
+        return chemtag.chemical.element->weight;
+    } else if (chemtag.tag == 1) {
+        j= chemtag.chemical.molecule->nelements;
+        for(i=0; i<j; i++){
+            acc+=
+                (chemtag.chemical.molecule->elements[i]->weight *
+                 chemtag.chemical.molecule->atoms[i]);
+        } return acc;
+    }
+}
+
+===== hw4_evidence.c =====
+
+/* Min su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* Homework 4 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "hw4.h"
+
+void evidence_adding()
+{
+    char one[]="he";
+    char two[]="      ";
+    char three[]="hi";
+    adding(one, two, 0);
+    adding(one, two, 2);
+    adding(one, two, 4);
+    printf("%s\n", two);
+    adding(three, two, 0);
+    adding(three, two, 4);
+    printf("expecting hihehi -- %s\n",two);
+}
+
+void evidence_concat()
+{
+    printf(" === testing concat === \n");
+    char* one[]={"hello, world","abc","123","DEF"};
+    char* two[]={"hi"," ","how're ya?"};
+    char* three[]={"omg ", "this hw ", "is too ", "loooong"};
+    char* print= concat(one,4);
+    printf("expecting hello, worldabc123DEF -- %s\n", print);
+    print= concat(two, 3);
+    printf("expecting hi how're ya? -- %s\n", print);
+    print= concat(three, 4);
+    printf("expecting omg this hw is too loooong -- %s\n", print);
+    free(print);
+}
+
+void evidence_uint_to_binary()
+{
+    printf(" === testing uint to binary === \n");
+    char* print= uint_to_binary(0);
+    char* print1= uint_to_binary(5);
+    char* print2= uint_to_binary(10);
+    char* print3= uint_to_binary(100);
+    printf("expecting 0, %s\n", print);
+    printf("expecting 101, %s\n", print1);
+    printf("expecting 1010, %s\n", print2);
+    printf("expecting 1100100, %s\n", print3);
+    free(print);
+    free(print1);
+    free(print2);
+    free(print3);
+}
+
+void evidence_binary_to_uint()
+{
+    printf(" === testing binary to uint === \n");
+    char one[]="1010";
+    char two[]="101";
+    char thr[]="100101";
+    printf("expecting 10, %d\n",binary_to_uint(one));
+    printf("expecting 5, %d\n",binary_to_uint(two));
+    printf("expecting 37, %d\n",binary_to_uint(thr));
+}
+
+void evidence_analyze_weather()
+{
+    printf(" === testing analyze_weather === \n");
+    struct observations one={62.0, 22.0, 40.0};
+    struct observations two={91.0, 15.0, 20.0};
+    struct observations three={82.0, 20.0, 10.0};
+    struct observations four[]={one, two,three};
+    struct climate* inputclimate = malloc(sizeof(struct climate));
+    struct range range1 = {60.0,85.0};
+    struct range range2 = {15.0,21.0};
+    struct range range3 = {5.0,25.0};
+    struct preferences* initpref = new_preferences(range1, range2, range3);
+    struct compatibility* compats = malloc(sizeof(struct compatibility));
+    analyze_weather(four, 3, inputclimate, initpref, compats);
+    printf("expecting 78.3333, 62, 91 -- %g, %g, %g\n",
+           inputclimate->temps.avg, inputclimate->temps.min, inputclimate->temps.max);
+    printf("expecting 78.3333, 19, 23.3333 -- %g, %g, %g\n",
+           inputclimate->temps.avg, inputclimate->humids.avg, inputclimate->winds.avg);
+    printf("expecting 0.333333, 1, 2 -- %g, %d, %d\n",
+           compats->happiness, compats->good_days, compats->bad_days);
+    printf("expecting 82 -- %g\n", compats->good_data[0]->temp);
+    free(inputclimate);
+    free(initpref);
+    free(compats);
+}
+
+void evidence_mixture_weight()
+{
+    printf(" === testing mixture_weight === \n");
+    struct element* e1=new_element("oxygen",16);
+    struct element* e2=new_element("hydrogen", 1);
+    struct element* e3=new_element("nitrogen", 7);
+    struct element* e4=new_element("carbon", 12);
+    struct element* e5=new_element("silicone",14);
+    struct element* h2o[]={e1,e2};
+    struct element* cnsic[]={e4, e3, e5, e4};
+    unsigned int nh2o[]={1,2};
+    unsigned int ncnsic[]={1,2,1,1};
+    struct molecule* m1=new_molecule("h20", 2, h2o, nh2o);
+    struct molecule* m2=new_molecule("CNSiC", 4, cnsic, ncnsic);
+    struct tagged_chemical tc1={MOLECULE, {m1}};
+    struct tagged_chemical tc2={ELEMENT, {e3}};
+    struct tagged_chemical tc3={ELEMENT, {e4}};
+    struct tagged_chemical tc4={ELEMENT, {e5}};
+    struct tagged_chemical tc5={ELEMENT, {e1}};
+    struct tagged_chemical tc6={MOLECULE, {m2}};
+    struct tagged_chemical test1[]={tc1,tc2,tc3};
+    struct tagged_chemical test2[]={tc1, tc2, tc3, tc4,tc5, tc6};
+    struct tagged_chemical test3[]={tc2, tc4, tc3};
+    double moles1[]={5.0,3.5,10.0};
+    double moles2[]={2.0,5.0, 2.0,2.5, 1.0, 2.0};
+    double moles3[]={3.0, 0.0, 4.5};
+    struct mixture* mix=new_mixture("random", 3, test1, moles1);
+    struct mixture* mix2= new_mixture("random", 6, test2, moles2);
+    struct mixture* mix3= new_mixture("random", 3, test3, moles3);
+    printf("expecting 234 -- %d\n", mixture_weight(mix));
+    printf("expecting 250 -- %d\n", mixture_weight(mix2));
+    printf("expecting 75 -- %d\n", mixture_weight(mix3));
+    free(e1);
+    free(e2);
+    free(e3);
+    free(e4);
+    free(m1);
+    free(mix);
+    free(mix2);
+    free(mix3);
+}
+
+int main(int argc, char* argv[])
+{
+    evidence_adding();
+    evidence_concat();
+    evidence_uint_to_binary();
+    evidence_binary_to_uint();
+    evidence_analyze_weather();
+    evidence_mixture_weight();
+    return 0;
+}
+===== concat.c =====
+
+/* Min su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* Homework 4 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "hw4.h"
+
+int main (int argc, char *argv[])
+{
+    int i;
+    for(i=0; i<(argc-1); i++){
+        argv[i]=argv[i+1];
+    } //#grader: unnecessary; just pass argv+1. -1 design
+    char* toprint=concat(argv, argc-1);
+    printf("%s\n", toprint);
+    free(toprint);
+    return 0;
+}
+===== dec2bin.c =====
+
+/* Min su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* Homework 4 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "hw4.h"
+
+int main (int argc, char *argv[])
+{
+    unsigned int a= atoi(argv[1]);
+    printf("%s\n", uint_to_binary(a));
+    //#grader: memory leak; string pointer lost. -1 design
+    return 0;
+}
+===== bin2dec.c =====
+
+/* Min su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* Homework 4 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "hw4.h"
+
+int main (int argc, char *argv[])
+{
+    printf("%d\n", binary_to_uint(argv[1]));
+    return 0;
+}
+===== Makefile =====
+
+evidence: hw4.c hw4_evidence.c
+	gcc -Wall -o hw4_evidence hw4.c hw4_evidence.c
+
+concat: hw4.c concat.c
+	gcc -Wall -o concat hw4.c concat.c
+
+dec2bin: hw4.c dec2bin.c
+	gcc -Wall -o dec2bin hw4.c dec2bin.c
+
+bin2dec: hw4.c bin2dec.c
+	gcc -Wall -o bin2dec hw4.c bin2dec.c
+
+clean: 
+	rm *~ bin2dec dec2bin concat
+
+/* ====================== *
+ * === GRADER'S TESTS === *
+ * ====================== *
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include "hw4.h"
+
+void g_testing_concat()
+{
+  int i;
+  char **s0 = NULL;
+  char *s1[1] = {"hello"};
+  char *s2[2] = {"hello ","world"};
+  char *s3[3] = {"hello"," ","world"};
+  char *s4[4] = {"Hello"," to"," ","You"};
+  char *s5[5] = {"Sandwiches"," ","are"," ","tasty"};
+  char *s6[6] = {"A","B","C","D","E","F"};
+  char **sp[7] = {s0,s1,s2,s3,s4,s5,s6};
+  char *ans[7] = {"hello","hello world","hello world","Hello to You",
+		  "Sandwiches are tasty","ABCDEF"};
+  char *tmp;
+  printf("=== Testing concat ===\n");
+  tmp = concat(sp[0],0);
+  if(!tmp)
+    printf("Student returns NULL on 0 strings.............................\n");
+  else if(!strcmp("",tmp)) {
+    printf("Student returns empty string ('\\0') on 0 strings\n");
+    free(tmp);
+  }
+  else {
+    printf("Unknown return string (%s) on 0 strings...................\n",tmp);
+    free(tmp);
+  }
+  for(i=1;i<7;i++) {
+    tmp = concat(sp[i],i);
+    printf("%d strings:\t%s\n",i,(!strcmp(ans[i-1],tmp))?"yes":"no..........");
+  }
+  return;
+}
+
+void g_testing_uint_binary()
+{
+  unsigned int src[7] = {0,1,4,6,8,10,255};
+  char *ans[7] = {"0","1","100","110","1000","1010","11111111"};
+  char *tmp;
+  unsigned int ret;
+  int i;
+  printf("=== Testing uint_to_binary ===\n");
+  for(i=0;i<7;i++) {
+    tmp = uint_to_binary(src[i]);
+    printf("%u:\t%s\n",src[i],(!strcmp(ans[i],tmp))?"yes":"no...............");
+    free(tmp);
+  }
+  printf("=== Testing binary_to_uint ===\n");
+  for(i=0;i<7;i++) {
+    ret = binary_to_uint(ans[i]);
+    printf("%s:\t%s\n",ans[i],(ret==src[i])?"yes":"no.......................");
+  }
+  return;
+}
+
+void g_testing_analyze_weather()
+{
+  printf("=== Testing analyze_weather ===\n");
+  struct observations ob1 = {40,30,15};
+  struct observations ob2 = {20,50,10};
+  struct observations ob3 = {60,50,5};
+  struct observations ob4 = {75,40,8};
+  struct observations ob5 = {70,45,3};
+  struct observations ob6 = {20,10,23};
+  struct observations ob7 = {50,59,10};
+  struct observations ob8 = {80,100,7};
+  struct observations ob9 = {0,0,0};
+  struct observations obs[9] = {ob1,ob2,ob3,ob4,ob5,ob6,ob7,ob8,ob9};
+  struct observations *o = obs;
+  unsigned int nobservations = 9;
+  struct climate climate;
+  struct preferences preferences = {{30,85},{40,60},{3,12}};
+  int i;
+  struct compatibility compatibility;
+  compatibility.good_days=0;
+  compatibility.bad_days=0;
+  analyze_weather(o,nobservations,&climate,&preferences,&compatibility);
+  printf("Number good days (4): %s\nNumber bad days (5):  %s\n",
+	 compatibility.good_days==4?"yes":"no........................",
+	 compatibility.bad_days==5?"yes":"no.........................");
+  printf("--- Good Days ---\n");
+  for(i=0; i<compatibility.good_days; i++) {
+    printf("---\nt: %lf\nh: %lf\nw: %lf\n",
+	   compatibility.good_data[i]->temp,
+	   compatibility.good_data[i]->humid,
+	   compatibility.good_data[i]->wind);
+  }
+  printf("---\n--- Climate ---\n"
+	 "RefTemp......(min)0.000000 (max)80.000000  (avr)46.111111\n"
+	 "Temperature: (min)%lf (max)%lf  (avr)%lf\n"
+	 "RefW.........(min)0.000000 (max)100.000000 (avr)42.666667\n"
+	 "Wind:        (min)%lf (max)%lf (avr)%lf\n"
+	 "RefHumidity..(min)0.000000 (max)23.000000  (avr)9.000000\n"
+	 "Humidity:    (min)%lf (max)%lf  (avr)%lf\n",
+	 climate.temps.min,
+	 climate.temps.max,
+	 climate.temps.avg,
+	 climate.humids.min,
+	 climate.humids.max,
+	 climate.humids.avg,
+	 climate.winds.min,
+	 climate.winds.max,
+	 climate.winds.avg);
+  printf("--- Happiness ---\n0.444444==%lf\n",compatibility.happiness);
+  free(compatibility.good_data);
+  free(compatibility.bad_data);
+  return;
+}
+
+void g_testing_chemicals()
+{
+  // === Infrastructure ===
+  printf("=== Testing chemical_weight, mixture_weight ===\n");
+  char *sC = "Carbon";
+  char *sH = "Hydrogen";
+  char *sO = "Oxygen";
+  char *sCl = "Chlorine";
+  char *sS = "Sulfur";
+  char *sH2O = "Water";
+  char *sCH2Cl2 = "Dichloromethane";
+  char *sCH4 = "Methane";
+  char *sMe2SO = "Dimethylsulfoxide";
+  char *sP = "Phosphorus";
+  struct element H = {sH,1};
+  struct element C = {sC,12};
+  struct element O = {sO,16};
+  struct element S = {sS,32};
+  struct element Cl = {sCl,35};
+  struct element P = {sP,30};
+  struct element *aH2O[] = {&H,&O};
+  struct element *aCH2Cl2[] = {&C,&H,&Cl};
+  struct element *aCH4[] = {&C,&H};
+  struct element *aMe2SO[] = {&C,&H,&S,&O};
+  unsigned int nH2O[] = {2,1};
+  unsigned int nCH2Cl2[] = {1,2,2};
+  unsigned int nCH4[] = {1,4};
+  unsigned int nMe2SO[] = {2,6,1,1};
+  struct molecule H2O = {sH2O,2,aH2O,nH2O};
+  struct molecule CH2Cl2 = {sCH2Cl2,3,aCH2Cl2,nCH2Cl2};
+  struct molecule CH4 = {sCH4,2,aCH4,nCH4};
+  struct molecule Me2SO = {sMe2SO,4,aMe2SO,nMe2SO};
+  struct tagged_chemical tH2O;
+  tH2O.tag = MOLECULE;
+  tH2O.chemical.molecule = &H2O;
+  struct tagged_chemical tCH2Cl2;
+  tCH2Cl2.tag = MOLECULE;
+  tCH2Cl2.chemical.molecule = &CH2Cl2;
+  struct tagged_chemical tCH4;
+  tCH4.tag = MOLECULE;
+  tCH4.chemical.molecule = &CH4;
+  struct tagged_chemical tMe2SO;
+  tMe2SO.tag = MOLECULE;
+  tMe2SO.chemical.molecule = &Me2SO;
+  struct tagged_chemical tP;
+  tP.tag = ELEMENT;
+  tP.chemical.element = &P;
+  // More infrastructure
+  char *sDMSO_H2O = "DMSO/H2O";
+  char *sDMSO_P = "P in DMSO";
+  char *sDMSO_DCM = "DCM/DMSO";
+  char *sDCM_CH4_P = "CH4, P in DCM";
+  struct tagged_chemical cDMSO_H2O[] = {tMe2SO,tH2O};
+  struct tagged_chemical cDMSO_P[] = {tMe2SO,tP};
+  struct tagged_chemical cDMSO_DCM[] = {tMe2SO,tCH2Cl2};
+  struct tagged_chemical cDCM_CH4_P[] = {tCH2Cl2,tCH4,tP};
+  double nDMSO_H2O[] = {1.5,1.0};
+  double nDMSO_P[] = {3.0,0.5};
+  double nDMSO_DCM[] = {0.75,4.0};
+  double nDCM_CH4_P[] = {3.0,0.1,0.25};
+  struct mixture DMSO_H2O = {sDMSO_H2O,2,cDMSO_H2O,nDMSO_H2O};
+  struct mixture DMSO_P = {sDMSO_P,2,cDMSO_P,nDMSO_P};
+  struct mixture DMSO_DCM = {sDMSO_DCM,2,cDMSO_DCM,nDMSO_DCM};
+  struct mixture DCM_CH4_P = {sDCM_CH4_P,3,cDCM_CH4_P,nDCM_CH4_P};
+  //--- Testing mixture weight ---
+  printf("DMSO_H2O:      %s\n",mixture_weight(&DMSO_H2O)==135?"yes":"no.....");
+  printf("DMSO_P:        %s\n",mixture_weight(&DMSO_P)==249?"yes":"no.......");
+  printf("DMSO_DCM:      %s\n",mixture_weight(&DMSO_DCM)==394?"yes":"no.....");
+  printf("DCM_CH4_P:     %s\n",mixture_weight(&DCM_CH4_P)==260?"yes":"no....");
+  return;
+}
+
+int main()
+{
+  g_testing_concat();
+  g_testing_uint_binary();
+  g_testing_analyze_weather();
+  g_testing_chemicals();
+  return 0;
+}
+
+
+/* ====== evaluation ====== */
+
+/* === correctness === */
+
+/* problem 1 (concat)                   4/ 6 */
+
+/* problem 2 (uint_to_binary)           4/ 6 */
+/* problem 2 (binary_to_uint)           6/ 6 */
+
+/* problem 3 (analyze_weather)         12/12 */
+
+/* problem 4 (mixture_weight)          12/12 */
+
+/* === style === */
+
+/* code layout                          4/ 6 */
+/* identifiers are well named           6/ 6 */
+/* well-written purposes                4/ 4 */
+/* prototypes with appropriate types    4/ 4 */
+
+/* functions are well designed          4/ 6 */
+/* code is well factored                6/ 6 */
+
+/* code is written clearly              8/ 8 */
+/* code is efficient                    6/ 6 */
+
+/* adequate tests                       8/ 8 */
+/* svn used correctly                   4/ 4 */
+
+/* _total-score_                       92/100 */
+
+/* graded by Mark Maskeri */

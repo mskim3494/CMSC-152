@@ -1,0 +1,60 @@
+/* Project A guideline */
+/* CS152 Winter 2015   */
+
+/* ====== evaluation ====== */
+
+/* === correctness === */
+
+/* vector operations              / 8 */
+
+/* rgb operations                 / 8 */
+
+/* object list operations         / 8 */
+
+/* tos and show functions        6/ 8 */
+
+  /* bails on showing lists of objects */
+
+/* coordinates (logical_loc)      /10 */
+
+/* sphere intersection testing    /10 */
+
+/* poster intersection testing    /10 */
+
+/* shadows                        /10 */
+
+/* lighting                       /10 */
+
+/* ray tracing                    /10 */
+
+/* correct rendering              /10 */
+
+/* === style === */
+
+/* code layout                        6/ 8 */
+ 
+   /* spacing and indentation are sometimes a little off --
+    * refer to K&R for examples
+    */
+
+/* identifiers are well named          / 8 */
+
+/* code is written clearly             / 8 */
+
+/* code is efficient                   / 8 */
+
+/* functions are well designed         / 6 */
+
+/* code is well factored               / 6 */
+
+/* svn used correctly                  / 4 */
+
+/* _total-score_                    146/150 */
+
+/* Excellent work! Passed all my tests. I appreciate the
+ * command-line options implementation in rt. Go ahead and
+ * construct a string to be able to show object lists -- 
+ * it's worth the trouble.
+ */
+
+/* graded by Adam Shaw */

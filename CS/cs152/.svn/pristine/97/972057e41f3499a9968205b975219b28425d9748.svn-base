@@ -1,0 +1,79 @@
+/* Min Su Kim, mskim3494 */
+/* CMSC 152, Winter 2015 */
+/* HOMEWORK 5 */
+
+#ifndef HUFF_H
+#define HUFF_H
+
+typedef struct leaf leaf;
+typedef struct node node;
+typedef struct huff huff;
+
+enum huff_tag { LEAF, NODE };
+
+struct leaf {
+    char c;
+    int n;
+};
+
+struct node {
+    int n;
+    huff *lsub;
+    huff *rsub;
+};
+
+union huff_union {
+    leaf leaf;
+    node node;
+};
+
+struct huff {
+    enum huff_tag tag;
+    union huff_union h;
+};
+
+typedef struct huff_list huff_list;
+struct huff_list {
+    huff* h;
+    huff_list* next;
+};
+
+char* normalize (char c);
+
+int* count_letters(char* c);
+
+huff_list* singleton_lst(int* arr);
+
+huff* final_huff(huff_list* list);
+
+
+
+/* Construct a singleton Huffman tree from a character and a count. */
+huff *huff_singleton(char c, int n);
+
+huff_list* new_hufflist(huff* h, huff_list* list);
+
+huff_list* huff_insert(huff_list* list, huff* h);
+
+void ins_middle(huff_list* prev, huff_list* rest, huff_list* h);
+
+/* Return the weight of a Huffman tree. */
+int huff_weight(huff *h);
+
+/* Merge two Huffman trees. */
+/* See step 2 of the algorithm on the web page for details. */
+huff *huff_merge(huff *h1, huff *h2);
+
+/* Display a Huffman tree at the console. */
+/* Essential for development and debugging. */
+void huff_show(huff *h);
+
+void huff_lst_free(huff_list* h);
+
+void huff_show(huff *h);
+
+#endif /* HUFF_H */
+
+
+
+

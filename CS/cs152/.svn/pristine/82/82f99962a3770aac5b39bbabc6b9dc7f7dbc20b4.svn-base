@@ -1,0 +1,24 @@
+/* Min Su Kim
+ * mskim3494
+ * CS152 Winter 2015
+ * Project A
+ * Feb 2015
+ */
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "raytracer.h"
+
+scene new_scene(rgb bg, obj_list *o, light light, rgb amb)
+{
+    scene new;
+    new.bg=bg;
+    new.objects=o;
+    new.light=light;
+    new.amb=amb;
+    return new;
+}
+
